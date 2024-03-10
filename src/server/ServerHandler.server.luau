@@ -12,7 +12,7 @@ local Plots = game.Workspace.Plots
 
 local playerTycoons = {}
 
-local function AssignTycoon(plr)
+function AssignTycoon(plr)
     for _, plot in Plots:GetChildren() do
         if plot:GetAttribute("Taken") then 
             continue 
@@ -32,6 +32,7 @@ local function AssignTycoon(plr)
 end
 
 function onPlayerAdded(player)
+    player:SetAttribute("Cash", 0)
     AssignTycoon(player)
 end
 
