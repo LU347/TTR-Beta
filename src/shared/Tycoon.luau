@@ -1,5 +1,8 @@
-local TycoonItemData = require(game.ReplicatedStorage.Shared.TycoonItemData)
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TycoonItemData = require(ReplicatedStorage.Shared.TycoonItemData)
 local Plot = require(game.ServerScriptService.Server.Plot)
+
+local PlantSeed = ReplicatedStorage.RemoteEvents.PlantSeed
 
 local Tycoon = {}
 Tycoon.__index = Tycoon
@@ -14,6 +17,8 @@ local TycoonItems = {
     ["PlotA"] = TemplatePlot.Plots.PlotA
 }
 
+local ServerTycoons = {}
+
 --local DEBOUNCE_COOLDOWN = 2
 
 function Tycoon.new(player, tycoonInstance, unlocked)
@@ -21,7 +26,9 @@ function Tycoon.new(player, tycoonInstance, unlocked)
     self.Owner = player
     self.Unlocked = {}                   --Saved
     self.Plots = {}                      --Saved
-    self.TycoonInstance = tycoonInstance --Not Saved
+    self.Instance = tycoonInstance --Not Saved
+
+    ServerTycoons[player.UserId] = self
 
     return self
 end
@@ -29,22 +36,22 @@ end
 function Tycoon:Init()
     local buttonsFolder = Instance.new("Folder")
     buttonsFolder.Name = "Buttons"
-    buttonsFolder.Parent = self.TycoonInstance
+    buttonsFolder.Parent = self.Instance
 
     local itemsFolder = Instance.new("Folder")
     itemsFolder.Name = "Items"
-    itemsFolder.Parent = self.TycoonInstance
+    itemsFolder.Parent = self.Instance
 
     local plotsFolder = Instance.new("Folder")
     plotsFolder.Name = "Plots"
-    plotsFolder.Parent = self.TycoonInstance
+    plotsFolder.Parent = self.Instance
 
     --Initialize Plot Locations--
     local tycoonPlots = templatePlots:Clone()
 
     for _, plot in tycoonPlots:GetChildren() do
         local relativeCFrame = TemplatePlot.CFrame:ToObjectSpace(plot.CFrame)
-        plot.CFrame = self.TycoonInstance.CFrame:ToWorldSpace(relativeCFrame)
+        plot.CFrame = self.Instance.CFrame:ToWorldSpace(relativeCFrame)
         plot.Parent = plotsFolder
     end
 
@@ -53,13 +60,13 @@ function Tycoon:Init()
 
     for _, button in tycoonButtons:GetChildren() do
         local relativeCFrame = TemplatePlot.CFrame:ToObjectSpace(button.CFrame)
-        button.CFrame = self.TycoonInstance.CFrame:ToWorldSpace(relativeCFrame)
+        button.CFrame = self.Instance.CFrame:ToWorldSpace(relativeCFrame)
 
         local debounce = false
         
         button.Touched:Connect(function(hit)
             local player = game.Players:GetPlayerFromCharacter(hit.Parent)
-            if not player or self.TycoonInstance:GetAttribute("Owner") ~= self.Owner.UserId then 
+            if not player or self.Instance:GetAttribute("Owner") ~= self.Owner.UserId then 
                 return
             end
 
@@ -69,10 +76,8 @@ function Tycoon:Init()
 
                     if string.sub(button:GetAttribute("ItemUnlock"), 1, 4) == "Plot" then
                         --Create plot table, insert it into self.Plots
-                        local plot = Plot.new(self.Owner, self.TycoonInstance, button:GetAttribute("Location"), button:GetAttribute("ItemUnlock"))
+                        local plot = Plot.new(self.Owner, button:GetAttribute("Location"), self.Instance, button:GetAttribute("ItemUnlock"))
                         self.Plots[button:GetAttribute("Location")] = plot
-
-                        print(self.Plots)
                     else
                         table.insert(self.Unlocked, button:GetAttribute("ItemUnlock"))
                         self:UnlockItem(TycoonItems[button:GetAttribute("ItemUnlock")])
@@ -80,16 +85,16 @@ function Tycoon:Init()
                     --TODO: Button Upgrades
                     button:Destroy()
                 end
+                print(ServerTycoons)
             end
         end)
-        
         button.Parent = buttonsFolder
     end
 end
 
 function Tycoon:GetNewItemCFrame(itemCFrame)
     local relativeCFrame = TemplatePlot.CFrame:ToObjectSpace(itemCFrame)
-    return self.TycoonInstance.CFrame:ToWorldSpace(relativeCFrame)
+    return self.Instance.CFrame:ToWorldSpace(relativeCFrame)
 end
 
 function Tycoon:UnlockItem(item)
@@ -104,17 +109,34 @@ function Tycoon:UnlockItem(item)
         itemClone.CFrame = self:GetNewItemCFrame(itemCFrame)
     end
     
-    itemClone.Parent = self.TycoonInstance.Items
+    itemClone.Parent = self.Instance.Items
 end
 
 function Tycoon:CleanUp()
-    self.TycoonInstance:SetAttribute("Taken", false)
-    self.TycoonInstance:SetAttribute("Owner", nil)
-    self.TycoonInstance.Buttons:Destroy()
-    self.TycoonInstance.Items:Destroy()
-
-    self = {}
-    print(self)
+    self.Instance:SetAttribute("Taken", false)
+    self.Instance:SetAttribute("Owner", nil)
+    self.Instance.Buttons:Destroy()
+    self.Instance.Items:Destroy()
+    self = nil
 end
+
+PlantSeed.OnServerEvent:Connect(function(player, fieldInstance, seed)
+    if ServerTycoons[player.UserId] then
+        local plots = ServerTycoons[player.UserId].Plots
+        local fieldLocation = "Plot" .. string.upper(string.sub(fieldInstance.Name,1,1))
+
+        if plots[fieldLocation] then
+            local f = plots[fieldLocation].Fields
+            for fieldKey, _ in f do
+                if fieldKey == fieldInstance.Name then
+                    plots[fieldLocation]:Plant(fieldInstance, seed)
+                    break
+                else
+                    continue
+                end
+            end
+        end
+    end
+end)
 
 return Tycoon
