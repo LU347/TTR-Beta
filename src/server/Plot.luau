@@ -41,21 +41,44 @@ function Plot:Init()
             field:SetAttribute("Watered", false)
 
             CollectionService:AddTag(field, "Field")
+
             --Table Attributes-- 
             self.Fields[field.Name] = {
                 Teapot = {}
             }
-            print(self.Fields)
+
+            --Attribute Functions --
+            field:GetAttributeChangedSignal("Watered"):Connect(function()
+                if field:GetAttribute("Watered") == true then
+                    field.Color = Color3.fromRGB(70,53,44)
+                else 
+                    field.Color = Color3.fromRGB(86,66,54)
+                end
+            end)
         end
     end
 end
 
 function Plot:Plant(fieldInstance, seed)
     --Instance--
+    local teapot = ReplicatedStorage.Teapots:FindFirstChild(seed)
+    local teapotClone = teapot:Clone()
+    local teapotCFrame = CFrame.new(fieldInstance.CFrame.X, fieldInstance.CFrame.Y + 0.5, fieldInstance.CFrame.Z)
+    fieldInstance:SetAttribute("Taken", true)
+    teapotClone:PivotTo(teapotCFrame)
+    teapotClone.Parent = fieldInstance
     --Table--
     self.Fields[fieldInstance.Name].Teapot = seed --store teapot table?
     print("In Plot Module")
     print(self.Fields[fieldInstance.Name])
+end
+
+function Plot:Water(fieldInstance)
+    --[[
+        Dry Color: [86,66,54]
+        Wet Color: [43,33,27]
+    ]]--
+    fieldInstance:SetAttribute("Watered", true)
 end
 
 return Plot

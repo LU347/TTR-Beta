@@ -3,6 +3,7 @@ local TycoonItemData = require(ReplicatedStorage.Shared.TycoonItemData)
 local Plot = require(game.ServerScriptService.Server.Plot)
 
 local PlantSeed = ReplicatedStorage.RemoteEvents.PlantSeed
+local WaterField = ReplicatedStorage.RemoteEvents.WaterField
 
 local Tycoon = {}
 Tycoon.__index = Tycoon
@@ -120,7 +121,13 @@ function Tycoon:CleanUp()
     self = nil
 end
 
+local function getUserTycoon(player)
+    return ServerTycoons[player.UserId]
+end
+
 PlantSeed.OnServerEvent:Connect(function(player, fieldInstance, seed)
+    --local playerTycoon = getUserTycoon(player)
+
     if ServerTycoons[player.UserId] then
         local plots = ServerTycoons[player.UserId].Plots
         local fieldLocation = "Plot" .. string.upper(string.sub(fieldInstance.Name,1,1))
@@ -130,6 +137,26 @@ PlantSeed.OnServerEvent:Connect(function(player, fieldInstance, seed)
             for fieldKey, _ in f do
                 if fieldKey == fieldInstance.Name then
                     plots[fieldLocation]:Plant(fieldInstance, seed)
+                    break
+                else
+                    continue
+                end
+            end
+        end
+    end
+end)
+
+WaterField.OnServerEvent:Connect(function(player, fieldInstance)
+    --TODO: Refactor
+    if ServerTycoons[player.UserId] then
+        local plots = ServerTycoons[player.UserId].Plots
+        local fieldLocation = "Plot" .. string.upper(string.sub(fieldInstance.Name,1,1))
+
+        if plots[fieldLocation] then
+            local f = plots[fieldLocation].Fields
+            for fieldKey, _ in f do
+                if fieldKey == fieldInstance.Name then
+                    plots[fieldLocation]:Water(fieldInstance)
                     break
                 else
                     continue
