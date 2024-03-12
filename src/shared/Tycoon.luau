@@ -121,7 +121,7 @@ function Tycoon:CleanUp()
     self = nil
 end
 
-local function getUserTycoon(player)
+local function getUserTycoon(player) -- CHANGE TO GET PLOT FIELD
     return ServerTycoons[player.UserId]
 end
 

@@ -1,6 +1,8 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local Teapot = require(game.ServerScriptService.Server.Teapot)
+
 local Plot = {}
 Plot.__index = Plot
 
@@ -60,17 +62,18 @@ function Plot:Init()
 end
 
 function Plot:Plant(fieldInstance, seed)
-    --Instance--
-    local teapot = ReplicatedStorage.Teapots:FindFirstChild(seed)
-    local teapotClone = teapot:Clone()
-    local teapotCFrame = CFrame.new(fieldInstance.CFrame.X, fieldInstance.CFrame.Y + 0.5, fieldInstance.CFrame.Z)
     fieldInstance:SetAttribute("Taken", true)
-    teapotClone:PivotTo(teapotCFrame)
-    teapotClone.Parent = fieldInstance
+
     --Table--
-    self.Fields[fieldInstance.Name].Teapot = seed --store teapot table?
-    print("In Plot Module")
-    print(self.Fields[fieldInstance.Name])
+    local teapot = Teapot.new(seed)
+    self.Fields[fieldInstance.Name].Teapot = teapot
+    print(self.Fields)
+
+    --Instance--
+    local teapotCFrame = CFrame.new(fieldInstance.CFrame.X, fieldInstance.CFrame.Y + 0.5, fieldInstance.CFrame.Z)
+    teapot.Instance:PivotTo(teapotCFrame)
+    teapot.Instance.Parent = fieldInstance
+    teapot.Instance:SetAttribute("Growing", true)
 end
 
 function Plot:Water(fieldInstance)
