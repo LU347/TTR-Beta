@@ -29,7 +29,6 @@ local function onInputBegan(input, _gameProcessed)
                 elseif currentAction == "Water" then
                     --TODO: Water Functionality
                     if mouse.Target:HasTag("Field")  and mouse.Target:GetAttribute("Watered") == false then
-                        print("watered " .. mouse.Target.Name)
                         WaterField:FireServer(mouse.Target)
                     end
                 end

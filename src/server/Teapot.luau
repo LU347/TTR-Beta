@@ -1,4 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
+
+local TeapotData = require(ReplicatedStorage.Shared.TeapotData)
 
 local Teapot = {}
 Teapot.__index = Teapot
@@ -26,7 +29,24 @@ function Teapot:Init()
 end
 
 function Teapot:Grow()
-    print("hello")
+    local heightDiff = TeapotData[self.Name].MaxSize.Y / 2
+    local growTime = TeapotData[self.Name].MaxSize.Z * 5
+
+    local tweenGoal = {}
+    tweenGoal.Size = self.Instance.Size + TeapotData[self.Name].MaxSize
+    tweenGoal.Position = Vector3.new(self.Instance.Position.X, self.Instance.Position.Y + heightDiff, self.Instance.Position.Z)
+
+    local tweenInfo = TweenInfo.new(
+        growTime,
+        Enum.EasingStyle.Sine,
+        Enum.EasingDirection.In,
+        0,
+        false,
+        0
+    )
+
+    local tweenMesh = TweenService:Create(self.Instance, tweenInfo, tweenGoal)
+    tweenMesh:Play()
 end
 
 return Teapot

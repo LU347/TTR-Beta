@@ -53,6 +53,9 @@ function Plot:Init()
             field:GetAttributeChangedSignal("Watered"):Connect(function()
                 if field:GetAttribute("Watered") == true then
                     field.Color = Color3.fromRGB(70,53,44)
+                    if field:GetAttribute("Taken") == true then
+                        self.Fields[field.Name].Teapot:Grow()
+                    end
                 else 
                     field.Color = Color3.fromRGB(86,66,54)
                 end
@@ -67,13 +70,15 @@ function Plot:Plant(fieldInstance, seed)
     --Table--
     local teapot = Teapot.new(seed)
     self.Fields[fieldInstance.Name].Teapot = teapot
-    print(self.Fields)
 
     --Instance--
     local teapotCFrame = CFrame.new(fieldInstance.CFrame.X, fieldInstance.CFrame.Y + 0.5, fieldInstance.CFrame.Z)
     teapot.Instance:PivotTo(teapotCFrame)
     teapot.Instance.Parent = fieldInstance
-    teapot.Instance:SetAttribute("Growing", true)
+
+    if fieldInstance:GetAttribute("Watered") == true then
+        teapot:Grow()
+    end
 end
 
 function Plot:Water(fieldInstance)

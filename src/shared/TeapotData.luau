@@ -1,6 +1,6 @@
 return {
     ["Original"] = {
-        ["MaxSize"] = Vector3.new(5,5,5),
+        ["MaxSize"] = Vector3.new(4,3,6),
         ["MaxValue"] = 10
     }
 }
