@@ -20,6 +20,8 @@ local function onInputBegan(input, _gameProcessed)
         end
 
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            if mouse.Target == nil then return end
+
             if mouse.Target:GetAttribute("Owner") == player.UserId then
                 if currentAction == "Plant" then
                     if mouse.Target:HasTag("Field") and mouse.Target:GetAttribute("Taken") == false then

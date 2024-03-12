@@ -121,49 +121,32 @@ function Tycoon:CleanUp()
     self = nil
 end
 
-local function getUserTycoon(player) -- CHANGE TO GET PLOT FIELD
-    return ServerTycoons[player.UserId]
+local function getPlotField(player, fieldInstance)
+    if ServerTycoons[player.UserId] then
+        local plots = ServerTycoons[player.UserId].Plots
+        local fieldLocation = "Plot" .. string.upper(string.sub(fieldInstance.Name, 1,1))
+        
+        if plots[fieldLocation] then
+            local f = plots[fieldLocation].Fields
+            for fieldKey, _ in f do
+                if fieldKey == fieldInstance.Name then
+                    return plots[fieldLocation]
+                else
+                    continue
+                end
+            end
+        end
+    end
 end
 
 PlantSeed.OnServerEvent:Connect(function(player, fieldInstance, seed)
-    --local playerTycoon = getUserTycoon(player)
-
-    if ServerTycoons[player.UserId] then
-        local plots = ServerTycoons[player.UserId].Plots
-        local fieldLocation = "Plot" .. string.upper(string.sub(fieldInstance.Name,1,1))
-
-        if plots[fieldLocation] then
-            local f = plots[fieldLocation].Fields
-            for fieldKey, _ in f do
-                if fieldKey == fieldInstance.Name then
-                    plots[fieldLocation]:Plant(fieldInstance, seed)
-                    break
-                else
-                    continue
-                end
-            end
-        end
-    end
+    local field = getPlotField(player, fieldInstance)
+    field:Plant(fieldInstance, seed)
 end)
 
 WaterField.OnServerEvent:Connect(function(player, fieldInstance)
-    --TODO: Refactor
-    if ServerTycoons[player.UserId] then
-        local plots = ServerTycoons[player.UserId].Plots
-        local fieldLocation = "Plot" .. string.upper(string.sub(fieldInstance.Name,1,1))
-
-        if plots[fieldLocation] then
-            local f = plots[fieldLocation].Fields
-            for fieldKey, _ in f do
-                if fieldKey == fieldInstance.Name then
-                    plots[fieldLocation]:Water(fieldInstance)
-                    break
-                else
-                    continue
-                end
-            end
-        end
-    end
+    local field = getPlotField(player, fieldInstance)
+    field:Water(fieldInstance)
 end)
 
 return Tycoon
