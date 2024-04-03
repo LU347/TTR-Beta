@@ -40,6 +40,11 @@ local function onInputBegan(input, _gameProcessed)
                     if currentAction == "Harvest" then
                         HarvestPot:FireServer(mouse.Target)
                     end
+                elseif currentAction == "Water" then
+                    --TODO: Water Functionality
+                    if mouse.Target:HasTag("Field")  and mouse.Target:GetAttribute("Watered") == false then
+                        WaterField:FireServer(mouse.Target)
+                    end
                 end
             end
         end

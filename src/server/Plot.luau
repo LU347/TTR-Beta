@@ -92,7 +92,6 @@ function Plot:Plant(fieldInstance, seed)
     teapot.Instance.Parent = fieldInstance
     
     CollectionService:AddTag(teapot.Instance, "Teapot")
-    
     if fieldInstance:GetAttribute("Watered") == true then
         teapot:Grow()
     end
