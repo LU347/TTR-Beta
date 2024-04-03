@@ -47,3 +47,6 @@ local function onInputBegan(input, _gameProcessed)
 end
 
 UserInputService.InputBegan:Connect(onInputBegan)
+
+
+

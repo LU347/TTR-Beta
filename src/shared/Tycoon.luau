@@ -80,6 +80,7 @@ function Tycoon:Init()
                         --Create plot table, insert it into self.Plots
                         local plot = Plot.new(self.Owner, button:GetAttribute("Location"), self.Instance, button:GetAttribute("ItemUnlock"))
                         self.Plots[button:GetAttribute("Location")] = plot
+                        print(self.Plots)
                     else
                         table.insert(self.Unlocked, button:GetAttribute("ItemUnlock"))
                         self:UnlockItem(TycoonItems[button:GetAttribute("ItemUnlock")])
@@ -123,15 +124,16 @@ function Tycoon:CleanUp()
 end
 
 local function getFieldTable(player, fieldInstance)
+    --Finds the plot table and returns the field table that matches the fieldInstance
     if ServerTycoons[player.UserId] then
         local plots = ServerTycoons[player.UserId].Plots
-        local fieldLocation = "Plot" .. string.upper(string.sub(fieldInstance, 1,1))
+        local plotLocation = "Plot" .. string.upper(string.sub(fieldInstance, 1,1))
         
-        if plots[fieldLocation] then
-            local f = plots[fieldLocation].Fields
+        if plots[plotLocation] then
+            local f = plots[plotLocation].Fields
             for fieldKey, _ in f do
                 if fieldKey == fieldInstance then
-                    return plots[fieldLocation]
+                    return plots[plotLocation]
                 else
                     continue
                 end
