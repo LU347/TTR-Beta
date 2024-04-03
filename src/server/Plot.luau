@@ -21,21 +21,33 @@ end
 
 function Plot:Init()
     local placeHolder = self.Tycoon.Plots:FindFirstChild(self.Location)
+    local plotModel = ReplicatedStorage.Assets:FindFirstChild(self.Type)
     local plotClone
     local plotCFrame
-
+    --[[
     if self.Type == "Plot_Small" then
-        plotClone = ReplicatedStorage.Assets:FindFirstChild("Plot_Small"):Clone()
+        plotClone = plotModel:Clone()
         plotCFrame = plotClone:GetPivot()
         plotClone.Parent = placeHolder
         
         plotClone:PivotTo(placeHolder.CFrame)
         placeHolder:SetAttribute("Owner", self.Owner.UserId)
     end
+    ]]
+    plotClone = plotModel:Clone()
+    plotCFrame = plotClone:GetPivot()
+    plotClone.Parent = placeHolder
+        
+    plotClone:PivotTo(placeHolder.CFrame)
+    placeHolder:SetAttribute("Owner", self.Owner.UserId)
 
     --Initialize Fields--
     for _, field in plotClone:GetChildren() do
-        if string.len(field.Name) == 2 then
+        if field.Name ~= "Base" then
+            --Replaces default field name from 1 to A1 or B1 .. depending on PlotLocation
+            local newName = string.sub(self.Location, 5, 6) .. field.Name
+            field.Name = newName
+
             --Instance Attributes--
             field:SetAttribute("Owner", self.Owner.UserId)
             field:SetAttribute("Type", string.sub(self.Type, 6, string.len(self.Type)))
@@ -46,6 +58,7 @@ function Plot:Init()
 
             --Table Attributes-- 
             self.Fields[field.Name] = {
+                Instance = field,
                 Teapot = {}
             }
 
@@ -74,8 +87,11 @@ function Plot:Plant(fieldInstance, seed)
     --Instance--
     local teapotCFrame = CFrame.new(fieldInstance.CFrame.X, fieldInstance.CFrame.Y + 0.5, fieldInstance.CFrame.Z)
     teapot.Instance:PivotTo(teapotCFrame)
+    teapot.Instance:SetAttribute("Owner", self.Owner.UserId)
+    teapot.Instance:SetAttribute("Location", fieldInstance.Name)
     teapot.Instance.Parent = fieldInstance
-
+    
+    CollectionService:AddTag(teapot.Instance, "Teapot")
     if fieldInstance:GetAttribute("Watered") == true then
         teapot:Grow()
     end
@@ -87,6 +103,16 @@ function Plot:Water(fieldInstance)
         Wet Color: [43,33,27]
     ]]--
     fieldInstance:SetAttribute("Watered", true)
+end
+
+function Plot:Harvest(fieldTable, fieldInstance)
+    CollectionService:RemoveTag(fieldTable.Teapot.Instance, "Teapot")
+
+    fieldTable.Teapot.Instance:Destroy()
+    fieldTable.Teapot = {}
+
+    fieldInstance:SetAttribute("Watered", false)
+    fieldInstance:SetAttribute("Taken", false)
 end
 
 return Plot

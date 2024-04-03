@@ -4,6 +4,7 @@ local Plot = require(game.ServerScriptService.Server.Plot)
 
 local PlantSeed = ReplicatedStorage.RemoteEvents.PlantSeed
 local WaterField = ReplicatedStorage.RemoteEvents.WaterField
+local HarvestPot = ReplicatedStorage.RemoteEvents.HarvestPot
 
 local Tycoon = {}
 Tycoon.__index = Tycoon
@@ -79,6 +80,7 @@ function Tycoon:Init()
                         --Create plot table, insert it into self.Plots
                         local plot = Plot.new(self.Owner, button:GetAttribute("Location"), self.Instance, button:GetAttribute("ItemUnlock"))
                         self.Plots[button:GetAttribute("Location")] = plot
+                        print(self.Plots)
                     else
                         table.insert(self.Unlocked, button:GetAttribute("ItemUnlock"))
                         self:UnlockItem(TycoonItems[button:GetAttribute("ItemUnlock")])
@@ -121,32 +123,41 @@ function Tycoon:CleanUp()
     self = nil
 end
 
-local function getPlotField(player, fieldInstance)
+local function getFieldTable(player, fieldInstance)
+    --Finds the plot table and returns the field table that matches the fieldInstance
     if ServerTycoons[player.UserId] then
         local plots = ServerTycoons[player.UserId].Plots
-        local fieldLocation = "Plot" .. string.upper(string.sub(fieldInstance.Name, 1,1))
+        local plotLocation = "Plot" .. string.upper(string.sub(fieldInstance, 1,1))
         
-        if plots[fieldLocation] then
-            local f = plots[fieldLocation].Fields
+        if plots[plotLocation] then
+            local f = plots[plotLocation].Fields
             for fieldKey, _ in f do
-                if fieldKey == fieldInstance.Name then
-                    return plots[fieldLocation]
+                if fieldKey == fieldInstance then
+                    return plots[plotLocation]
                 else
                     continue
                 end
             end
         end
     end
+
+    return nil
 end
 
 PlantSeed.OnServerEvent:Connect(function(player, fieldInstance, seed)
-    local field = getPlotField(player, fieldInstance)
-    field:Plant(fieldInstance, seed)
+    local fieldTable = getFieldTable(player, fieldInstance.Name)    
+    fieldTable:Plant(fieldInstance, seed)
 end)
 
 WaterField.OnServerEvent:Connect(function(player, fieldInstance)
-    local field = getPlotField(player, fieldInstance)
-    field:Water(fieldInstance)
+    local fieldTable = getFieldTable(player, fieldInstance.Name)
+    fieldTable:Water(fieldInstance)
 end)
+
+HarvestPot.OnServerEvent:Connect(function(player, teapot)
+    local fieldTable = getFieldTable(player, teapot:GetAttribute("Location"))
+    local location = teapot:GetAttribute("Location")
+    fieldTable:Harvest(fieldTable.Fields[location], fieldTable.Fields[location].Instance)
+end
 
 return Tycoon
