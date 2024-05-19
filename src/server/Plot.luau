@@ -24,17 +24,9 @@ function Plot:Init()
     local plotModel = ReplicatedStorage.Assets:FindFirstChild(self.Type)
     local plotClone
     local plotCFrame
-    --[[
-    if self.Type == "Plot_Small" then
-        plotClone = plotModel:Clone()
-        plotCFrame = plotClone:GetPivot()
-        plotClone.Parent = placeHolder
-        
-        plotClone:PivotTo(placeHolder.CFrame)
-        placeHolder:SetAttribute("Owner", self.Owner.UserId)
-    end
-    ]]
+
     plotClone = plotModel:Clone()
+    self.PlotInstance = plotClone
     plotCFrame = plotClone:GetPivot()
     plotClone.Parent = placeHolder
         
@@ -113,6 +105,11 @@ function Plot:Harvest(fieldTable, fieldInstance)
 
     fieldInstance:SetAttribute("Watered", false)
     fieldInstance:SetAttribute("Taken", false)
+end
+
+function Plot:Clean()
+   self.PlotInstance:Destroy()
+   self = {}
 end
 
 return Plot
