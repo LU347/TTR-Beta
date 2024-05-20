@@ -16,7 +16,7 @@ local templateButtonsFolder = TemplatePlot.Buttons
 
 local ServerTycoons = {}
 
-local DEBOUNCE_COOLDOWN = 2
+local DEBOUNCE_COOLDOWN = 1.75
 
 function Tycoon.new(player, tycoonInstance, unlocked)
     local self = setmetatable({}, Tycoon)
@@ -57,22 +57,9 @@ function Tycoon:Init()
     ]]
     local tycoonButtons = templateButtonsFolder:Clone()
 
-    local buttonUpgrades = {
-        ["Plot_Small"] = "Plot_Medium",
-        ["Plot_Medium"] = "Plot_Large",
-        ["Plot_Large"] = "Plot_XLarge"
-    }
-
-    local buttonLabels = {
-        ["Plot_Medium"] = "Medium Plot: ",
-        ["Plot_Large"] = "Large Plot: ",
-        ["Plot_XLarge"] = "Extra Large Plot: "
-    }
-
     for _, button in tycoonButtons:GetChildren() do
         local relativeCFrame = TemplatePlot.CFrame:ToObjectSpace(button.CFrame)
         button.CFrame = self.Instance.CFrame:ToWorldSpace(relativeCFrame)
-
         local debounce = false
         
         button.Touched:Connect(function(hit)
@@ -82,13 +69,16 @@ function Tycoon:Init()
             end
 
             if not debounce then
+                local itemCost = button:GetAttribute("ItemCost")
                 local itemName = button:GetAttribute("ItemUnlock")
                 local itemLocation = button:GetAttribute("Location")
-                local isUpgradeable = button:GetAttribute("Upgradeable")
-               
-                if self.Owner:GetAttribute("Cash") >= button:GetAttribute("ItemCost") then
-                    debounce = true
+                local playerCash = self.Owner:GetAttribute("Cash")
 
+                if playerCash >= itemCost then
+                    debounce = true
+                    playerCash = playerCash - itemCost
+                    self.Owner:SetAttribute("Cash", playerCash)
+                    
                     if string.sub(itemName, 1, 4) == "Plot" then
                         --Clears the old plot table and replaces it with the upgraded plot
                         if self.Plots[itemLocation] ~= nil then
@@ -97,28 +87,34 @@ function Tycoon:Init()
                         --Creates a Plot table and inserts it into self.Plots / Tycoon.Plots--
                         local plot = Plot.new(self.Owner, itemLocation, self.Instance, itemName)
                         self.Plots[itemLocation] = plot
+                        --Plot Upgrade Progression
+                        local maxUpgrade = button:GetAttribute("MaxUpgrade")
+                        local plots = {"Plot_Small", "Plot_Medium", "Plot_Large", "Plot_XLarge"}
+                        local currentIndex = table.find(plots, itemName)
+                        
+                        local buttonLabels = {
+                            ["Plot_Medium"] = "Medium Plot: ",
+                            ["Plot_Large"] = "Large Plot: ",
+                            ["Plot_XLarge"] = "Extra Large Plot: "
+                        }
+
+                        if currentIndex < maxUpgrade then
+                            local nextItem = plots[currentIndex + 1]
+                            button:SetAttribute("ItemUnlock", nextItem)
+                            local buttonGui = button.BillboardGui
+                            --need to get cost of next item
+                            buttonGui.TextLabel.Text = buttonLabels[nextItem] .. tostring(button:GetAttribute("ItemCost"))
+                        elseif currentIndex == maxUpgrade then
+                            button:Destroy()
+                        end
                     else
                         self:UnlockItem(TycoonItemData[itemName])
+                        button:Destroy()
                     end
                     
                     if table.find(self.Unlocked, itemLocation) == nil then
                         table.insert(self.Unlocked, itemLocation)
                     end
-                    
-                    --TODO: Button Upgrades
-                    --TODO: Change button upgrades to an indexable array to determine if the next item index is less than the max upgrade index?
-                    if isUpgradeable then
-                        local nextItem = buttonUpgrades[itemName]
-                        button:SetAttribute("ItemUnlock", nextItem)
-                        --adjust costs
-                        --check if that item is upgradeable
-
-                        local buttonGui = button.BillboardGui
-                        buttonGui.TextLabel.Text = buttonLabels[nextItem] .. tostring(button:GetAttribute("ItemCost"))
-                        --costs
-
-                    end
-                    --button:Destroy()
                 end
 
                 wait(DEBOUNCE_COOLDOWN)
