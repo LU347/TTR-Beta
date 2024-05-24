@@ -84,14 +84,15 @@ function Tycoon:Init()
                         if self.Plots[itemLocation] ~= nil then
                             self.Plots[itemLocation]:Clean()
                         end
+
                         --Creates a Plot table and inserts it into self.Plots / Tycoon.Plots--
                         local plot = Plot.new(self.Owner, itemLocation, self.Instance, itemName)
                         self.Plots[itemLocation] = plot
+
                         --Plot Upgrade Progression
                         local maxUpgrade = button:GetAttribute("MaxUpgrade")
                         local plots = {"Plot_Small", "Plot_Medium", "Plot_Large", "Plot_XLarge"}
                         local currentIndex = table.find(plots, itemName)
-                        
                         local buttonLabels = {
                             ["Plot_Medium"] = "Medium Plot: ",
                             ["Plot_Large"] = "Large Plot: ",
