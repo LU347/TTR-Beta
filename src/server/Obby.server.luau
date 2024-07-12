@@ -2,6 +2,12 @@ local CollectionService = game:GetService("CollectionService")
 local Debris = game:GetService("Debris")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local DEBRIS_COOLDOWN = 2.5
+local FORCE_AMOUNT = 45000
+local SPAWN_COOLDOWN = 0.5
+local SPAWN_HEIGHT = 5
+local TEAPOT_SIZE = Vector3.new(12,10,18.69)
+
 local isRunning = true
 local originalTeapot = ReplicatedStorage.Teapots.ObbyTeapot
 local random = Random.new()
@@ -9,11 +15,6 @@ local random = Random.new()
 local obby = workspace.Obby     --tempp location
 local spawnWall = obby.SpawnWall
 local teapotCollider = obby.TeapotCollider
-
-local DEBRIS_COOLDOWN = 2.5
-local FORCE_AMOUNT = 45000
-local SPAWN_COOLDOWN = 0.5
-local TEAPOT_SIZE = Vector3.new(12,10,18.69)
 
 local function getRandomColor()
     local teapotColors = {"Pastel Blue", "Light green", "Brick yellow", "Bright green", "Bright purple"}
@@ -42,7 +43,7 @@ local function generateTeapots()
         clone.Size = TEAPOT_SIZE
         clone.BrickColor = BrickColor.new(getRandomColor())
         clone.CFrame = CFrame.Angles(0, getRandomAngle(), 0)
-        clone.Position = Vector3.new(spawner.Position.X, spawner.Position.Y + 5, spawner.Position.Z)
+        clone.Position = Vector3.new(spawner.Position.X, spawner.Position.Y + SPAWN_HEIGHT, spawner.Position.Z)
         clone.Parent = workspace
         clone.Anchored = false
 

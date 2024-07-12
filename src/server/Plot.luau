@@ -69,6 +69,12 @@ function Plot:Init()
     end
 end
 
+function Plot:Upgrade(newPlot)
+    self.PlotInstance:Destroy()
+    self.Type = newPlot
+    self:Init()
+end
+
 function Plot:Plant(fieldInstance, seed)
     fieldInstance:SetAttribute("Taken", true)
 

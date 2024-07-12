@@ -2,6 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TycoonItemData = require(ReplicatedStorage.Shared.TycoonItemData)
 local TycoonComponents = require(ReplicatedStorage.Shared.TycoonComponents)
 local Plot = require(game.ServerScriptService.Server.Plot)
+local Button = require(game.ServerScriptService.Server.Button)
 
 local PlantSeed = ReplicatedStorage.RemoteEvents.PlantSeed
 local WaterField = ReplicatedStorage.RemoteEvents.WaterField
@@ -11,6 +12,7 @@ local Tycoon = {}
 Tycoon.__index = Tycoon
 
 local TemplatePlot = game.Workspace.TemplatePlot --replace
+local templateItemsFolder = TemplatePlot.Items
 local templatePlotsFolder = TemplatePlot.Plots
 local templateButtonsFolder = TemplatePlot.Buttons
 
@@ -23,7 +25,7 @@ function Tycoon.new(player, tycoonInstance, unlocked)
     self.Owner = player
     self.Unlocked = {}                   --Saved
     self.Plots = {}                      --Saved
-    self.Instance = tycoonInstance --Not Saved
+    self.Instance = tycoonInstance       --Not Saved
 
     ServerTycoons[player.UserId] = self
 
@@ -60,73 +62,13 @@ function Tycoon:Init()
     for _, button in tycoonButtons:GetChildren() do
         local relativeCFrame = TemplatePlot.CFrame:ToObjectSpace(button.CFrame)
         button.CFrame = self.Instance.CFrame:ToWorldSpace(relativeCFrame)
-        local debounce = false
-        
-        button.Touched:Connect(function(hit)
-            local player = game.Players:GetPlayerFromCharacter(hit.Parent)
-            if not player or self.Instance:GetAttribute("Owner") ~= self.Owner.UserId then 
-                return
-            end
 
-            if not debounce then
-                local itemCost = button:GetAttribute("ItemCost")
-                local itemName = button:GetAttribute("ItemUnlock")
-                local itemLocation = button:GetAttribute("Location")
-                local playerCash = self.Owner:GetAttribute("Cash")
+        local buttonTable = Button.new(self, button)
 
-                if playerCash >= itemCost then
-                    debounce = true
-                    playerCash = playerCash - itemCost
-                    self.Owner:SetAttribute("Cash", playerCash)
-                    
-                    if string.sub(itemName, 1, 4) == "Plot" then
-                        --Clears the old plot table and replaces it with the upgraded plot
-                        if self.Plots[itemLocation] ~= nil then
-                            self.Plots[itemLocation]:Clean()
-                        end
-
-                        --Creates a Plot table and inserts it into self.Plots / Tycoon.Plots--
-                        local plot = Plot.new(self.Owner, itemLocation, self.Instance, itemName)
-                        self.Plots[itemLocation] = plot
-
-                        --Plot Upgrade Progression
-                        local maxUpgrade = button:GetAttribute("MaxUpgrade")
-                        local plots = {"Plot_Small", "Plot_Medium", "Plot_Large", "Plot_XLarge"}
-                        local currentIndex = table.find(plots, itemName)
-                        local buttonLabels = {
-                            ["Plot_Medium"] = "Medium Plot: ",
-                            ["Plot_Large"] = "Large Plot: ",
-                            ["Plot_XLarge"] = "Extra Large Plot: "
-                        }
-
-                        if currentIndex < maxUpgrade then
-                            local nextItem = plots[currentIndex + 1]
-                            button:SetAttribute("ItemUnlock", nextItem)
-                            local buttonGui = button.BillboardGui
-                            --need to get cost of next item
-                            buttonGui.TextLabel.Text = buttonLabels[nextItem] .. tostring(button:GetAttribute("ItemCost"))
-                        elseif currentIndex == maxUpgrade then
-                            button:Destroy()
-                        end
-                    else
-                        self:UnlockItem(TycoonItemData[itemName])
-                        button:Destroy()
-                    end
-                    
-                    if table.find(self.Unlocked, itemLocation) == nil then
-                        table.insert(self.Unlocked, itemLocation)
-                    end
-                end
-
-                wait(DEBOUNCE_COOLDOWN)
-
-                debounce = false
-
-                print(ServerTycoons) --printing how a user's save data would look like
-            end
-        end)
         button.Parent = buttonsFolder
     end
+
+    print(ServerTycoons)
 end
 
 function Tycoon:GetNewItemCFrame(itemCFrame)
@@ -135,7 +77,7 @@ function Tycoon:GetNewItemCFrame(itemCFrame)
 end
 
 function Tycoon:UnlockItem(item)
-    local itemClone = item:Clone()
+    local itemClone = templateItemsFolder:FindFirstChild(item):Clone()
     local itemCFrame
     
     if itemClone:IsA("Model") then
