@@ -72,11 +72,16 @@ function Tycoon:Init()
     local ownerSign = TemplatePlot.OwnerSign:Clone()
     local signLabel = ownerSign.Sign.OwnerLabel.SurfaceGui.Frame.TextLabel
     local signCFrame = ownerSign:GetPivot()
-    
+
     ownerSign:PivotTo(self:GetNewItemCFrame(signCFrame))
     ownerSign.Parent = self.Instance
     signLabel.Text = self.Owner.Name .. "'s Farm"
 
+    --Clone Mountain
+    local mountain = TemplatePlot.Mountains:Clone()
+    local mountainCFrame = mountain:GetPivot()
+    mountain:PivotTo(self:GetNewItemCFrame(mountainCFrame))
+    mountain.Parent = self.Instance
 
     print(ServerTycoons)
 end
