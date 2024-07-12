@@ -68,6 +68,16 @@ function Tycoon:Init()
         button.Parent = buttonsFolder
     end
 
+    --Initialize owner sign
+    local ownerSign = TemplatePlot.OwnerSign:Clone()
+    local signLabel = ownerSign.Sign.OwnerLabel.SurfaceGui.Frame.TextLabel
+    local signCFrame = ownerSign:GetPivot()
+    
+    ownerSign:PivotTo(self:GetNewItemCFrame(signCFrame))
+    ownerSign.Parent = self.Instance
+    signLabel.Text = self.Owner.Name .. "'s Farm"
+
+
     print(ServerTycoons)
 end
 
