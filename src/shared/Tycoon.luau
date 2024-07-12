@@ -1,7 +1,4 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TycoonItemData = require(ReplicatedStorage.Shared.TycoonItemData)
-local TycoonComponents = require(ReplicatedStorage.Shared.TycoonComponents)
-local Plot = require(game.ServerScriptService.Server.Plot)
 local Button = require(game.ServerScriptService.Server.Button)
 
 local PlantSeed = ReplicatedStorage.RemoteEvents.PlantSeed
@@ -12,13 +9,12 @@ local Tycoon = {}
 Tycoon.__index = Tycoon
 
 local TemplatePlot = game.Workspace.TemplatePlot --replace
+local templateStarterFolder = TemplatePlot.StarterItems
 local templateItemsFolder = TemplatePlot.Items
 local templatePlotsFolder = TemplatePlot.Plots
 local templateButtonsFolder = TemplatePlot.Buttons
 
 local ServerTycoons = {}
-
-local DEBOUNCE_COOLDOWN = 1.75
 
 function Tycoon.new(player, tycoonInstance, unlocked)
     local self = setmetatable({}, Tycoon)
@@ -45,6 +41,10 @@ function Tycoon:Init()
     plotsFolder.Name = "Plots"
     plotsFolder.Parent = self.Instance
 
+    local starterFolder = Instance.new("Folder")
+    starterFolder.Name = "StarterItems"
+    starterFolder.Parent = self.Instance
+
     --Initialize Plot Locations--
     local tycoonPlots = templatePlotsFolder:Clone()
 
@@ -53,10 +53,8 @@ function Tycoon:Init()
         plot.CFrame = self.Instance.CFrame:ToWorldSpace(relativeCFrame)
         plot.Parent = plotsFolder
     end
-
-    --[[
-        Buttons from the template tycoon are cloned and transferred onto the player's tycoon
-    ]]
+    
+    --Buttons from the template tycoon are cloned and transferred onto the player's tycoon--
     local tycoonButtons = templateButtonsFolder:Clone()
 
     for _, button in tycoonButtons:GetChildren() do
@@ -68,20 +66,19 @@ function Tycoon:Init()
         button.Parent = buttonsFolder
     end
 
-    --Initialize owner sign
-    local ownerSign = TemplatePlot.OwnerSign:Clone()
-    local signLabel = ownerSign.Sign.OwnerLabel.SurfaceGui.Frame.TextLabel
-    local signCFrame = ownerSign:GetPivot()
+    --Clone Starter Items--
+    for _, item in templateStarterFolder:GetChildren() do
+        local itemClone = item:Clone()
+        local itemCFrame = item:GetPivot()
 
-    ownerSign:PivotTo(self:GetNewItemCFrame(signCFrame))
-    ownerSign.Parent = self.Instance
-    signLabel.Text = self.Owner.Name .. "'s Farm"
-
-    --Clone Mountain
-    local mountain = TemplatePlot.Mountains:Clone()
-    local mountainCFrame = mountain:GetPivot()
-    mountain:PivotTo(self:GetNewItemCFrame(mountainCFrame))
-    mountain.Parent = self.Instance
+        if item.Name == "OwnerSign" then
+            local label = itemClone.Sign.OwnerLabel.SurfaceGui.Frame.TextLabel
+            label.Text = self.Owner.Name .. "'s Farm"
+        end
+        
+        itemClone:PivotTo(self:GetNewItemCFrame(itemCFrame))
+        itemClone.Parent = starterFolder
+    end
 
     print(ServerTycoons)
 end
