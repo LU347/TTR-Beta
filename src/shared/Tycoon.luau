@@ -1,3 +1,4 @@
+local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Button = require(game.ServerScriptService.Server.Button)
 
@@ -89,12 +90,25 @@ function Tycoon:GetNewItemCFrame(itemCFrame)
 end
 
 function Tycoon:UnlockItem(item)
+    local function TagLightBlocks(lanterns)
+        local lightsFolder = lanterns.LightBlocks:GetChildren()
+        for _, lightblock in lightsFolder do
+            CollectionService:AddTag(lightblock, "LightBlock")
+            print("tag added")
+        end
+
+    end
+
     local itemClone = templateItemsFolder:FindFirstChild(item):Clone()
     local itemCFrame
     
     if itemClone:IsA("Model") then
         itemCFrame = itemClone:GetPivot()
         itemClone:PivotTo(self:GetNewItemCFrame(itemCFrame))
+
+        if string.sub(itemClone.Name, 1, 8) == "Lanterns" then
+            TagLightBlocks(itemClone)
+        end
     else
         itemCFrame = itemClone.CFrame
         itemClone.CFrame = self:GetNewItemCFrame(itemCFrame)
