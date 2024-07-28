@@ -1,36 +1,37 @@
--- Get the Lighting service
 local Lighting = game:GetService("Lighting")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
--- Set the duration of a full day in seconds
-local dayDuration = 300 -- 10 minutes for a full cycle
+local totalDuration = 300 -- Total duration of the cycle (5 minutes) in seconds
+local toggleLamps = ReplicatedStorage.RemoteEvents:WaitForChild("ToggleLamps")
+--local dayEvent = ReplicatedStorage:WaitForChild("DayEvent") -- Assuming you have a RemoteEvent named "DayEvent"
+--local nightEvent = ReplicatedStorage:WaitForChild("NightEvent") -- Assuming you have a RemoteEvent named "NightEvent"
 
--- Define time properties
-local dawn = 6 -- 6 AM
-local dusk = 18 -- 6 PM
+local isDay = true -- Start assuming it's daytime
+local startTime = 0.25
 
--- Function to update the time of day
-local function updateDayNightCycle()
-    while true do
-        for hour = 0, 24, 0.1 do
-            -- Set the ClockTime
-            Lighting.ClockTime = hour
-            
-            -- Adjust brightness and ambient color based on time
-            if hour >= dawn and hour <= dusk then
-                -- Daytime settings
-                Lighting.Brightness = 2
-                Lighting.OutdoorAmbient = Color3.fromRGB(127, 127, 127) -- Soft daylight ambient
-            else
-                -- Nighttime settings
-                Lighting.Brightness = 1 -- Brighter light for nighttime
-                Lighting.OutdoorAmbient = Color3.fromRGB(70, 70, 100) -- Brighter night ambient
+while true do
+    for i = startTime, 1, 0.01 do
+        local minutesAfterMidnight = i * 24 * 60
+        Lighting:SetMinutesAfterMidnight(minutesAfterMidnight)
+
+        -- Check for transitions between day and night
+        if minutesAfterMidnight < 18 * 60 then
+            if not isDay then
+                --dayEvent:FireAllClients() -- Fire day event once at the start of the day
+                toggleLamps:FireAllClients(false)
+                isDay = true
             end
-            
-            -- Wait a bit before updating the time again
-            wait(dayDuration / 240) -- Adjust the wait time to achieve smooth transition
+        else
+            if isDay then
+                --nightEvent:FireAllClients() -- Fire night event once at the start of the night
+                print("is night")
+                toggleLamps:FireAllClients(true)
+                isDay = false
+            end
         end
-    end
-end
 
--- Start the day-night cycle
-updateDayNightCycle()
+        wait(totalDuration / 100)
+    end
+
+    startTime = 0
+end

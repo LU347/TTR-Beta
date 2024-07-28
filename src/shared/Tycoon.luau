@@ -119,17 +119,11 @@ local function getFieldTable(player, fieldInstance)
         
         if plots[plotLocation] then
             local f = plots[plotLocation].Fields
-            for fieldKey, _ in f do
-                if fieldKey == fieldInstance then
-                    return plots[plotLocation]
-                else
-                    continue
-                end
+            if (f[fieldInstance]) then
+                return plots[plotLocation]
             end
         end
     end
-
-    return nil
 end
 
 PlantSeed.OnServerEvent:Connect(function(player, fieldInstance, seed)
