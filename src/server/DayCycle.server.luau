@@ -22,7 +22,7 @@ while true do
             Lighting:SetAttribute("isDay", false)
             debounce = true
         end
-    elseif hours > 6 and hours < 18 then
+    elseif hours > 6.2 and hours < 18 then
         if debounce then
             Lighting:SetAttribute("isDay", true)
             debounce = false

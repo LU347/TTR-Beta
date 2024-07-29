@@ -1,11 +1,24 @@
+
 local CollectionService = game:GetService("CollectionService")
 local Lighting = game:GetService("Lighting")
+local TweenService = game:GetService("TweenService")
 
 local tag = "LightBlock"
 local lightingAttribute = "isDay"
 
+local tweenInfo = TweenInfo.new(5)
+
 function togglePointLight(pointLight)
-    pointLight.Enabled = not game.Lighting:GetAttribute("isDay")
+    local onTween = TweenService:Create(pointLight, tweenInfo, { Brightness = 0.96 })
+    local offTween = TweenService:Create(pointLight, tweenInfo, { Brightness = 0 })
+
+    local isDay = game.Lighting:GetAttribute("isDay")
+
+    if isDay then
+        offTween:Play()
+    else
+        onTween:Play()
+    end
 end
 
 local function onInstanceAdded(lightBlock)
