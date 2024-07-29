@@ -76,6 +76,12 @@ function Plot:Upgrade(newPlot)
 end
 
 function Plot:Plant(fieldInstance, seed)
+    local function getRandomizedAngle()
+        local random = Random.new()
+        local angle = random:NextInteger(0, 180)
+        return CFrame.fromEulerAngles(0, angle, 0)
+    end
+    
     fieldInstance:SetAttribute("Taken", true)
 
     --Table--
@@ -83,13 +89,17 @@ function Plot:Plant(fieldInstance, seed)
     self.Fields[fieldInstance.Name].Teapot = teapot
 
     --Instance--
-    local teapotCFrame = CFrame.new(fieldInstance.CFrame.X, fieldInstance.CFrame.Y + 0.5, fieldInstance.CFrame.Z)
+    local teapotCFrame = CFrame.new(fieldInstance.CFrame.X, fieldInstance.CFrame.Y + 0.5, fieldInstance.CFrame.Z) 
+    * getRandomizedAngle()
+
     teapot.Instance:PivotTo(teapotCFrame)
     teapot.Instance:SetAttribute("Owner", self.Owner.UserId)
     teapot.Instance:SetAttribute("Location", fieldInstance.Name)
+    teapot.Instance.Anchored = true
     teapot.Instance.Parent = fieldInstance
     
     CollectionService:AddTag(teapot.Instance, "Teapot")
+    
     if fieldInstance:GetAttribute("Watered") == true then
         teapot:Grow()
     end

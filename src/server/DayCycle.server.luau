@@ -1,7 +1,7 @@
 local Lighting = game:GetService("Lighting")
 
 local TIME_SPEED = 360 -- 1 min = 1 hour
-local START_TIME = 8 -- 9am
+local START_TIME = 8 -- Starting time
 
 local minutesAfterMidnight = START_TIME * 60
 local waitTime = 60 / TIME_SPEED

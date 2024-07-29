@@ -89,7 +89,7 @@ function Tycoon:GetNewItemCFrame(itemCFrame)
     return self.Instance.CFrame:ToWorldSpace(relativeCFrame)
 end
 
-function Tycoon:UnlockItem(item)
+function Tycoon:CloneItem(item)
     local function TagLightBlocks(lanterns)
         local lightsFolder = lanterns.LightBlocks:GetChildren()
         for _, lightblock in lightsFolder do

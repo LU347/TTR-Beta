@@ -63,9 +63,8 @@ function Button:upgradePlot()
 end
 
 function Button:unlockTycoonItem()
-    self.Tycoon:UnlockItem(self.Item)
+    self.Tycoon:CloneItem(self.Item)
     table.insert(self.Tycoon.Unlocked, self.Item)
-    print(self.Tycoon)
 end
 
 function Button:updateButtonForUpgrade()
@@ -85,7 +84,7 @@ function Button:updateButtonForUpgrade()
 
         if currentIndex < maxUpgrade then
             nextUpgrade = plotTypes[currentIndex + 1]
-            self.Cost = 0 -- new cost
+            self.Cost = currentIndex * 75 + (2 * self.Cost) -- new cost
             self:updateButtonLabel(buttonGui, buttonLabels[nextUpgrade], self.Cost)
         elseif currentIndex == maxUpgrade then
             self:Destroy()
