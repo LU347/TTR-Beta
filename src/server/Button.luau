@@ -65,6 +65,7 @@ end
 function Button:unlockTycoonItem()
     self.Tycoon:UnlockItem(self.Item)
     table.insert(self.Tycoon.Unlocked, self.Item)
+    print(self.Tycoon.Unlocked) -- Not Printing
 end
 
 function Button:updateButtonForUpgrade()

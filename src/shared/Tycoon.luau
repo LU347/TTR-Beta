@@ -93,8 +93,8 @@ function Tycoon:UnlockItem(item)
     local function TagLightBlocks(lanterns)
         local lightsFolder = lanterns.LightBlocks:GetChildren()
         for _, lightblock in lightsFolder do
-            CollectionService:AddTag(lightblock, "LightBlock")
-            print("tag added")
+            local light = lightblock.PointLight
+            CollectionService:AddTag(light, "LightBlock")
         end
 
     end

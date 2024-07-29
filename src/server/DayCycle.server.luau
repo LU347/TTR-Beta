@@ -1,37 +1,31 @@
 local Lighting = game:GetService("Lighting")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local totalDuration = 300 -- Total duration of the cycle (5 minutes) in seconds
-local toggleLamps = ReplicatedStorage.RemoteEvents:WaitForChild("ToggleLamps")
---local dayEvent = ReplicatedStorage:WaitForChild("DayEvent") -- Assuming you have a RemoteEvent named "DayEvent"
---local nightEvent = ReplicatedStorage:WaitForChild("NightEvent") -- Assuming you have a RemoteEvent named "NightEvent"
+local TIME_SPEED = 360 -- 1 min = 1 hour
+local START_TIME = 8 -- 9am
 
-local isDay = true -- Start assuming it's daytime
-local startTime = 0.25
+local minutesAfterMidnight = START_TIME * 60
+local waitTime = 60 / TIME_SPEED
+local debounce = true
 
 while true do
-    for i = startTime, 1, 0.01 do
-        local minutesAfterMidnight = i * 24 * 60
-        Lighting:SetMinutesAfterMidnight(minutesAfterMidnight)
+    minutesAfterMidnight = minutesAfterMidnight + 1
+    
+    local minutesNormalized = minutesAfterMidnight % (60 * 24)
+    local hours = minutesNormalized / 60
 
-        -- Check for transitions between day and night
-        if minutesAfterMidnight < 18 * 60 then
-            if not isDay then
-                --dayEvent:FireAllClients() -- Fire day event once at the start of the day
-                toggleLamps:FireAllClients(false)
-                isDay = true
-            end
-        else
-            if isDay then
-                --nightEvent:FireAllClients() -- Fire night event once at the start of the night
-                print("is night")
-                toggleLamps:FireAllClients(true)
-                isDay = false
-            end
+    Lighting.ClockTime = hours
+
+	task.wait(waitTime)
+
+    if  hours >= 18 or hours <= 06 then
+        if not debounce then
+            Lighting:SetAttribute("isDay", false)
+            debounce = true
         end
-
-        wait(totalDuration / 100)
+    elseif hours > 6 and hours < 18 then
+        if debounce then
+            Lighting:SetAttribute("isDay", true)
+            debounce = false
+        end
     end
-
-    startTime = 0
 end
