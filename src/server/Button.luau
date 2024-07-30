@@ -1,5 +1,8 @@
 local Players = game:GetService("Players")
 local Plot = require(game.ServerScriptService.Server.Plot)
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
+local playSound = ReplicatedStorage.RemoteEvents.PlaySound
 
 local Button = {}
 Button.__index = Button
@@ -30,6 +33,7 @@ function Button:OnTouch(hit)
     local playerCash = player:GetAttribute("Cash")
     if playerCash >= self.Cost then
         self.Debounce = true
+        playSound:FireClient(self.Tycoon.Owner, "Buy")
         player:SetAttribute("Cash", playerCash - self.Cost)
         self:UnlockItem()
     end
@@ -77,6 +81,18 @@ function Button:updateButtonForUpgrade()
         Lanterns = "Lanterns: "
     }
 
+    local buttonColors = {
+        Color3.fromRGB(204, 142, 105),  --nougat
+        Color3.fromRGB(245, 205, 48), --bright yellow
+        Color3.fromRGB(13, 105, 172) -- bright blue
+    }
+
+    local function changeColor(color)
+        local tweenInfo = TweenInfo.new(1.5, Enum.EasingStyle.Bounce)
+        local changeColor = TweenService:Create(self.Instance, tweenInfo, { Color = color})
+        changeColor:Play()
+    end
+
     if string.sub(self.Item, 1, 4) == "Plot" then
         local maxUpgrade = self.Instance:GetAttribute("MaxUpgrade")
         local plotTypes = {"Plot_Small", "Plot_Medium", "Plot_Large", "Plot_XLarge"}
@@ -86,6 +102,7 @@ function Button:updateButtonForUpgrade()
             nextUpgrade = plotTypes[currentIndex + 1]
             self.Cost = currentIndex * 75 + (2 * self.Cost) -- new cost
             self:updateButtonLabel(buttonGui, buttonLabels[nextUpgrade], self.Cost)
+            changeColor(buttonColors[currentIndex + 1])
         elseif currentIndex == maxUpgrade then
             self:Destroy()
         end
@@ -94,6 +111,7 @@ function Button:updateButtonForUpgrade()
         self.Cost = self.Cost * 1.5 -- update
         self.Upgradeable = false
         self:updateButtonLabel(buttonGui, buttonLabels["Lanterns"], self.Cost)
+        changeColor(buttonColors[2])
     end
 
     self.Item = nextUpgrade

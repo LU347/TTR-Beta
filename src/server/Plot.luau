@@ -1,5 +1,8 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
+
+local playSound = ReplicatedStorage.RemoteEvents.PlaySound
 
 local Teapot = require(game.ServerScriptService.Server.Teapot)
 
@@ -33,38 +36,53 @@ function Plot:Init()
     plotClone:PivotTo(placeHolder.CFrame)
     placeHolder:SetAttribute("Owner", self.Owner.UserId)
 
+    local function initializeField(field)
+        --TODO: Field should be in a separate module
+        --Replaces default field name from 1 to A1 or B1 .. depending on PlotLocation
+        local newName = string.sub(self.Location, 5, 6) .. field.Name
+        field.Name = newName
+
+        --Instance Attributes--
+        field:SetAttribute("Owner", self.Owner.UserId)
+        field:SetAttribute("Type", string.sub(self.Type, 6, string.len(self.Type)))
+        field:SetAttribute("Taken", false)
+        field:SetAttribute("Watered", false)
+
+        CollectionService:AddTag(field, "Field")
+
+        --Table Attributes-- 
+        self.Fields[field.Name] = {
+            Instance = field,
+            Teapot = {}
+        }
+
+        --Attribute Functions --
+        field:GetAttributeChangedSignal("Watered"):Connect(function()
+            local tweenInfo = TweenInfo.new(2, Enum.EasingStyle.Sine)
+            local waterTween = TweenService:Create(field, tweenInfo, {Color = Color3.fromRGB(70,53,44)})
+            local dryTween = TweenService:Create(field, tweenInfo, {Color = Color3.fromRGB(86,66,54)})
+            --[[
+                Dry Color: [86,66,54]
+                Wet Color: [43,33,27]
+            ]]--
+            if field:GetAttribute("Watered") == true then
+                --field.Color = Color3.fromRGB(70,53,44)
+                waterTween:Play()
+                playSound:FireClient(self.Owner, "Water")
+                if field:GetAttribute("Taken") == true then
+                    self.Fields[field.Name].Teapot:Grow()
+                end
+            else 
+                --field.Color = Color3.fromRGB(86,66,54)
+                dryTween:Play()
+            end
+        end)
+    end
+
     --Initialize Fields--
     for _, field in plotClone:GetChildren() do
         if field.Name ~= "Base" then
-            --Replaces default field name from 1 to A1 or B1 .. depending on PlotLocation
-            local newName = string.sub(self.Location, 5, 6) .. field.Name
-            field.Name = newName
-
-            --Instance Attributes--
-            field:SetAttribute("Owner", self.Owner.UserId)
-            field:SetAttribute("Type", string.sub(self.Type, 6, string.len(self.Type)))
-            field:SetAttribute("Taken", false)
-            field:SetAttribute("Watered", false)
-
-            CollectionService:AddTag(field, "Field")
-
-            --Table Attributes-- 
-            self.Fields[field.Name] = {
-                Instance = field,
-                Teapot = {}
-            }
-
-            --Attribute Functions --
-            field:GetAttributeChangedSignal("Watered"):Connect(function()
-                if field:GetAttribute("Watered") == true then
-                    field.Color = Color3.fromRGB(70,53,44)
-                    if field:GetAttribute("Taken") == true then
-                        self.Fields[field.Name].Teapot:Grow()
-                    end
-                else 
-                    field.Color = Color3.fromRGB(86,66,54)
-                end
-            end)
+            initializeField(field)    
         end
     end
 end
@@ -76,6 +94,8 @@ function Plot:Upgrade(newPlot)
 end
 
 function Plot:Plant(fieldInstance, seed)
+    playSound:FireClient(self.Owner, "Plant")
+
     local function getRandomizedAngle()
         local random = Random.new()
         local angle = random:NextInteger(0, 180)
@@ -99,21 +119,19 @@ function Plot:Plant(fieldInstance, seed)
     teapot.Instance.Parent = fieldInstance
     
     CollectionService:AddTag(teapot.Instance, "Teapot")
-    
+
     if fieldInstance:GetAttribute("Watered") == true then
         teapot:Grow()
     end
 end
 
 function Plot:Water(fieldInstance)
-    --[[
-        Dry Color: [86,66,54]
-        Wet Color: [43,33,27]
-    ]]--
     fieldInstance:SetAttribute("Watered", true)
 end
 
 function Plot:Harvest(fieldTable, fieldInstance)
+    playSound:FireClient(self.Owner, "Harvest")
+
     CollectionService:RemoveTag(fieldTable.Teapot.Instance, "Teapot")
 
     fieldTable.Teapot.Instance:Destroy()
