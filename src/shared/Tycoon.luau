@@ -23,6 +23,7 @@ function Tycoon.new(player, tycoonInstance, unlocked)
     self.Unlocked = {}                   --Saved
     self.Plots = {}                      --Saved
     self.Instance = tycoonInstance       --Not Saved
+    self.Buttons = {}                    --Not Saved
 
     ServerTycoons[player.UserId] = self
 
@@ -46,12 +47,16 @@ function Tycoon:Init()
     starterFolder.Name = "StarterItems"
     starterFolder.Parent = self.Instance
 
+    local function changePartCFrame(object)
+        local relativeCFrame = TemplatePlot.CFrame:ToObjectSpace(object.CFrame)
+        object.CFrame = self.Instance.CFrame:ToWorldSpace(relativeCFrame)
+    end
+
     --Initialize Plot Locations--
     local tycoonPlots = templatePlotsFolder:Clone()
 
     for _, plot in tycoonPlots:GetChildren() do
-        local relativeCFrame = TemplatePlot.CFrame:ToObjectSpace(plot.CFrame)
-        plot.CFrame = self.Instance.CFrame:ToWorldSpace(relativeCFrame)
+        changePartCFrame(plot)
         plot.Parent = plotsFolder
     end
     
@@ -59,12 +64,11 @@ function Tycoon:Init()
     local tycoonButtons = templateButtonsFolder:Clone()
 
     for _, button in tycoonButtons:GetChildren() do
-        local relativeCFrame = TemplatePlot.CFrame:ToObjectSpace(button.CFrame)
-        button.CFrame = self.Instance.CFrame:ToWorldSpace(relativeCFrame)
-
-        local buttonTable = Button.new(self, button)
-
+        changePartCFrame(button)
         button.Parent = buttonsFolder
+
+        local b = Button.new(self, button)
+        table.insert(self.Buttons, b)
     end
 
     --Clone Starter Items--
@@ -80,11 +84,9 @@ function Tycoon:Init()
         itemClone:PivotTo(self:GetNewItemCFrame(itemCFrame))
         itemClone.Parent = starterFolder
     end
-
-    print(ServerTycoons)
 end
 
-function Tycoon:GetNewItemCFrame(itemCFrame)
+function Tycoon:GetNewItemCFrame(itemCFrame) --For Models
     local relativeCFrame = TemplatePlot.CFrame:ToObjectSpace(itemCFrame)
     return self.Instance.CFrame:ToWorldSpace(relativeCFrame)
 end

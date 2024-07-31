@@ -6,7 +6,7 @@ local TweenService = game:GetService("TweenService")
 local tag = "LightBlock"
 local lightingAttribute = "isDay"
 
-local tweenInfo = TweenInfo.new(5)
+local tweenInfo = TweenInfo.new(5, Enum.EasingStyle.Bounce)
 
 function togglePointLight(pointLight)
     local onTween = TweenService:Create(pointLight, tweenInfo, { Brightness = 0.96 })
