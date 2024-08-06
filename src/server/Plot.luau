@@ -26,13 +26,12 @@ end
 function Plot:Init()
     local placeHolder = self.Tycoon.Plots:FindFirstChild(self.Location)
     local plotModel = ReplicatedStorage.Assets:FindFirstChild(self.Type)
-    local plotClone
+    local plotClone = plotModel:Clone()
 
-    plotClone = plotModel:Clone()
     self.PlotInstance = plotClone
-    plotClone.Parent = placeHolder
+    self.PlotInstance.Parent = placeHolder
         
-    plotClone:PivotTo(placeHolder.CFrame)
+    self.PlotInstance:PivotTo(placeHolder.CFrame)
     placeHolder:SetAttribute("Owner", self.Owner.UserId)
 
     local function initializeField(field)
