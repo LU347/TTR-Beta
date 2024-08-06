@@ -127,29 +127,27 @@ function Tycoon:CleanUp()
     self = nil
 end
 
-local function getFieldTable(player, fieldInstance)
+local function getFieldTable(player, fieldName)
     --Finds the plot table and returns the field table that matches the fieldInstance
     if ServerTycoons[player.UserId] then
         local plots = ServerTycoons[player.UserId].Plots
-        local plotLocation = "Plot" .. string.upper(string.sub(fieldInstance, 1,1))
+        local plotLocation = "Plot" .. string.upper(string.sub(fieldName, 1,1))
         
         if plots[plotLocation] then
             local f = plots[plotLocation].Fields
-            if (f[fieldInstance]) then
-                return plots[plotLocation]
-            end
+            return f[fieldName]
         end
     end
 end
 
 PlantSeed.OnServerEvent:Connect(function(player, fieldInstance, seed)
     local fieldTable = getFieldTable(player, fieldInstance.Name)    
-    fieldTable:Plant(fieldInstance, seed)
+    fieldTable:Plant(seed)
 end)
 
 WaterField.OnServerEvent:Connect(function(player, fieldInstance)
     local fieldTable = getFieldTable(player, fieldInstance.Name)
-    fieldTable:Water(fieldInstance)
+    fieldTable:Water()
 end)
 
 HarvestPot.OnServerEvent:Connect(function(player, teapot)

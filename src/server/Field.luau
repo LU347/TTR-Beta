@@ -4,7 +4,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local TweenService = game:GetService("TweenService")
 
 local Teapot = require(ServerScriptService.Server.Teapot)
-local PlaySound = ReplicatedStorage.RemoteEvents.PlaySound
+local PlaySoundEvent = ReplicatedStorage.RemoteEvents.PlaySound
 
 local Field = {}
 Field.__index = Field
@@ -26,20 +26,22 @@ function Field:Init()
     self.Instance:SetAttribute("Taken", false)
     self.Instance:SetAttribute("Watered", false)
     self.Connection = self.Instance:GetAttributeChangedSignal("Watered"):Connect(function()
-        print("hello")
+       if #self.Teapot == 1 then
+        self.Teapot[1]:Grow()
+       end
     end)
 end
 
-local function playSound(action)
-    PlaySound:FireClient(action)
+function Field:PlaySound(action)
+    PlaySoundEvent:FireClient(self.Owner, action)
 end
 
 function Field:Plant(seed)
-    playSound("Plant")
+    self:PlaySound("Plant")
     self.Instance:SetAttribute("Taken", true)
 
-    local teapot = Teapot.new(seed, self.Instance)
-    self.Teapot[seed] = teapot
+    local teapot = Teapot.new(self.Owner, seed, self.Instance)
+    table.insert(self.Teapot, teapot)
 end
 
 function Field:Water()
@@ -56,7 +58,7 @@ function Field:Water()
     end
     
     if not isWatered then
-        playSound("Water")
+        self:PlaySound("Water")
 
         local wetColor = Color3.fromRGB(70,53,44)
         tweenFieldColor(wetColor)
