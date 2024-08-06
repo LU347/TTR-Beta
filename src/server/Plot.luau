@@ -59,22 +59,6 @@ function Plot:Upgrade(newPlot)
     self:Init()
 end
 
-function Plot:Water(fieldInstance)
-    fieldInstance:SetAttribute("Watered", true)
-end
-
-function Plot:Harvest(fieldTable, fieldInstance)
-    playSound:FireClient(self.Owner, "Harvest")
-
-    CollectionService:RemoveTag(fieldTable.Teapot.Instance, "Teapot")
-
-    fieldTable.Teapot.Instance:Destroy()
-    fieldTable.Teapot = {}
-
-    fieldInstance:SetAttribute("Watered", false)
-    fieldInstance:SetAttribute("Taken", false)
-end
-
 function Plot:Clean()
    self.PlotInstance:Destroy()
    self = {}

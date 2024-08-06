@@ -19,16 +19,38 @@ function Field.new(owner, instance, type)
     return self
 end
 
+local function tweenFieldColor(field, newColor)
+    local tweenInfo = TweenInfo.new(2, Enum.EasingStyle.Sine)
+    local tween = TweenService:Create(
+        field,
+        tweenInfo,
+        { Color = newColor }
+    )
+    tween:Play()
+end
+
 function Field:Init()
     CollectionService:AddTag(self.Instance, "Field")
     self.Instance:SetAttribute("Owner", self.Owner.UserId)
     self.Instance:SetAttribute("Type", self.Type)
     self.Instance:SetAttribute("Taken", false)
     self.Instance:SetAttribute("Watered", false)
+    
     self.Connection = self.Instance:GetAttributeChangedSignal("Watered"):Connect(function()
-       if #self.Teapot == 1 then
-        self.Teapot[1]:Grow()
-       end
+        local isWatered = self.Instance:GetAttribute("Watered")
+        if isWatered then
+            self:PlaySound("Water")
+
+            local wetColor = Color3.fromRGB(70,53,44)
+            tweenFieldColor(self.Instance, wetColor)
+
+            if #self.Teapot == 1 then
+                self.Teapot[1]:Grow()
+            end
+        else
+            local dryColor = Color3.fromRGB(86,66,54) --this block will not run
+            tweenFieldColor(self.Instance, dryColor)
+        end
     end)
 end
 
@@ -36,6 +58,7 @@ function Field:PlaySound(action)
     PlaySoundEvent:FireClient(self.Owner, action)
 end
 
+--Bug: Teapot doesn't grow when the field is already watered
 function Field:Plant(seed)
     self:PlaySound("Plant")
     self.Instance:SetAttribute("Taken", true)
@@ -45,34 +68,24 @@ function Field:Plant(seed)
 end
 
 function Field:Water()
-    local tweenInfo = TweenInfo.new(2, Enum.EasingStyle.Sine)
     local isWatered = self.Instance:GetAttribute("Watered")
 
-    local function tweenFieldColor(newColor)
-        local tween = TweenService:Create(
-            self.Instance,
-            tweenInfo,
-            { Color = newColor }
-        )
-        tween:Play()
-    end
-    
     if not isWatered then
-        self:PlaySound("Water")
-
-        local wetColor = Color3.fromRGB(70,53,44)
-        tweenFieldColor(wetColor)
-
         self.Instance:SetAttribute("Watered", true)
-    else
-        local dryColor = Color3.fromRGB(86,66,54)
-        tweenFieldColor(dryColor)
-
-        self.Instance:SetAttribute("Watered", false)
     end
 end
 
 function Field:Harvest()
+    self:PlaySound("Harvest")
+
+    local teapotInstance = self.Teapot[1].Instance
+    CollectionService:RemoveTag(teapotInstance, "Teapot")
+
+    teapotInstance:Destroy()
+
+    self.Teapot = {}
+    self.Instance:SetAttribute("Watered", false)
+    self.Instance:SetAttribute("Taken", false)
 end
 
 

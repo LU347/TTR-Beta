@@ -152,8 +152,7 @@ end)
 
 HarvestPot.OnServerEvent:Connect(function(player, teapot)
     local fieldTable = getFieldTable(player, teapot:GetAttribute("Location"))
-    local location = teapot:GetAttribute("Location")
-    fieldTable:Harvest(fieldTable.Fields[location], fieldTable.Fields[location].Instance)
+    fieldTable:Harvest()
 end)
 
 return Tycoon
