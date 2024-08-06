@@ -88,6 +88,4 @@ function Field:Harvest()
     self.Instance:SetAttribute("Taken", false)
 end
 
-
-
 return Field
