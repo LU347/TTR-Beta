@@ -37,10 +37,8 @@ function Field:Init()
     self.Instance:SetAttribute("Watered", false)
     
     self.Connection = self.Instance:GetAttributeChangedSignal("Watered"):Connect(function()
-        local isWatered = self.Instance:GetAttribute("Watered")
-        if isWatered then
+        if self.Instance:GetAttribute("Watered") then
             self:PlaySound("Water")
-
             local wetColor = Color3.fromRGB(70,53,44)
             tweenFieldColor(self.Instance, wetColor)
 
@@ -65,6 +63,10 @@ function Field:Plant(seed)
 
     local teapot = Teapot.new(self.Owner, seed, self.Instance)
     table.insert(self.Teapot, teapot)
+
+    if self.Instance:GetAttribute("Watered") then
+        teapot:Grow()
+    end
 end
 
 function Field:Water()
