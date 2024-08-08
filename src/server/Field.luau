@@ -88,6 +88,10 @@ function Field:Harvest()
     self.Teapot = {}
     self.Instance:SetAttribute("Watered", false)
     self.Instance:SetAttribute("Taken", false)
+
+    --temp
+    local playerCash = self.Owner:GetAttribute("Cash")
+    self.Owner:SetAttribute("Cash", playerCash + 50)
 end
 
 return Field
