@@ -26,6 +26,12 @@ function Teapot:Init()
         return CFrame.fromEulerAngles(0, angle, 0)
     end
 
+    local function initializeAttributes()
+        self.Instance:SetAttribute("Owner", self.Owner.UserId)
+        self.Instance:SetAttribute("Location", self.FieldInstance.Name)
+        self.Instance:SetAttribute("Growing", false)
+    end
+
     local teapot = ReplicatedStorage.Teapots:FindFirstChild(self.Name)
     local teapotCFrame = CFrame.new(
         self.FieldInstance.CFrame.X,
@@ -39,18 +45,20 @@ function Teapot:Init()
     self.Instance.Parent = self.FieldInstance
     self.Size = self.Instance.Size --tbd
 
-    self.Instance:SetAttribute("Owner", self.Owner.UserId)
-    self.Instance:SetAttribute("Location", self.FieldInstance.Name)
-    self.Instance:SetAttribute("Growing", false)
+    initializeAttributes()
 
+    CollectionService:AddTag(self.Instance, "Teapot")
+
+    --This is not being triggered
+    --[[
     self.Instance:GetAttributeChangedSignal("Growing"):Connect(function()
         local isGrowing = self.Instance:GetAttribute("Growing")
         if not isGrowing then
             self:Grow()
+            print("hello")
         end
     end)
-
-    CollectionService:AddTag(self.Instance, "Teapot")
+    ]]--
 end
 
 function Teapot:Grow()

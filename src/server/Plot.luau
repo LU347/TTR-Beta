@@ -52,6 +52,8 @@ function Plot:Init()
     end
 end
 
+--TODO: Clear old fiield tables and reinitialize
+--Keep existing teapots
 function Plot:Upgrade(newPlot)
     self.PlotInstance:Destroy()
     self.Type = newPlot
