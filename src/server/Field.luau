@@ -39,14 +39,14 @@ function Field:Init()
     self.Connection = self.Instance:GetAttributeChangedSignal("Watered"):Connect(function()
         if self.Instance:GetAttribute("Watered") then
             self:PlaySound("Water")
-            local wetColor = Color3.fromRGB(70,53,44)
+            local wetColor = Color3.fromRGB(59, 49, 42)
             tweenFieldColor(self.Instance, wetColor)
 
             if #self.Teapot == 1 then
                 self.Teapot[1]:Grow()
             end
         else
-            local dryColor = Color3.fromRGB(86,66,54) --this block will not run
+            local dryColor = Color3.fromRGB(86,66,54)
             tweenFieldColor(self.Instance, dryColor)
         end
     end)
