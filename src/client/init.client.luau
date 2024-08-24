@@ -12,42 +12,29 @@ local player = Players.LocalPlayer
 local mouse = player:GetMouse()
 
 local function onInputBegan(input, _gameProcessed)
-    if not _gameProcessed then
-        if input.KeyCode == Enum.KeyCode.One then
-            --TODO: Change actions to player attribute
-            currentAction = "Plant"
-        elseif input.KeyCode == Enum.KeyCode.Two then
-            currentAction = "Water"
-        elseif input.KeyCode == Enum.KeyCode.Three then
-            currentAction = "Harvest"
-        end
+    if _gameProcessed then return end
 
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            if mouse.Target == nil then return end
+    local actionMap = {
+        [Enum.KeyCode.One] = "Plant",
+        [Enum.KeyCode.Two] = "Water",
+        [Enum.KeyCode.Three] = "Harvest"
+    }
+    
+    currentAction = actionMap[input.KeyCode] or currentAction
 
-            if mouse.Target:GetAttribute("Owner") == player.UserId then
-                if mouse.Target:HasTag("Field") then
-                    if currentAction == "Plant" then
-                        if mouse.Target:GetAttribute("Taken") == false then
-                            PlantSeed:FireServer(mouse.Target, "Original")
-                        end
-                    elseif currentAction == "Water" then
-                        if mouse.Target:GetAttribute("Watered") == false then
-                            WaterField:FireServer(mouse.Target)
-                        end
-                    end
-                elseif mouse.Target:HasTag("Teapot") then
-                    if currentAction == "Harvest" then
-                        HarvestPot:FireServer(mouse.Target)
-                    end
-                elseif currentAction == "Water" then
-                    --TODO: Water Functionality
-                    if mouse.Target:HasTag("Field")  and mouse.Target:GetAttribute("Watered") == false then
-                        WaterField:FireServer(mouse.Target)
-                    end
-                end
-            end
+    if input.UserInputType ~= Enum.UserInputType.MouseButton1 or not mouse.Target then return end
+    
+    local target = mouse.Target
+    if target:GetAttribute("Owner") ~= player.UserId then return end
+    
+    if target:HasTag("Field") then
+        if currentAction == "Plant" and not target:GetAttribute("Taken") then
+            PlantSeed:FireServer(target, "Original")
+        elseif currentAction == "Water" and not target:GetAttribute("Watered") then
+            WaterField:FireServer(target)
         end
+    elseif target:HasTag("Teapot") and currentAction == "Harvest" then
+        HarvestPot:FireServer(target)
     end
 end
 
