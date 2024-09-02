@@ -56,6 +56,11 @@ function Button:UnlockItem()
     self.Debounce = false
 end
 
+function Button:unlockTycoonItem()
+    table.insert(self.Tycoon.Unlocked, self.Item)
+    self.Tycoon:CloneItem(self.Item)
+end
+
 function Button:upgradePlot()
     self.Location = self.Instance:GetAttribute("Location")
     if self.Tycoon.Plots[self.Location] then
@@ -64,11 +69,6 @@ function Button:upgradePlot()
         local plot = Plot.new(self.Tycoon.Owner, self.Location, self.Tycoon.Instance, self.Item)
         self.Tycoon.Plots[self.Location] = plot
     end
-end
-
-function Button:unlockTycoonItem()
-    self.Tycoon:CloneItem(self.Item)
-    table.insert(self.Tycoon.Unlocked, self.Item)
 end
 
 function Button:updateButtonForUpgrade()
