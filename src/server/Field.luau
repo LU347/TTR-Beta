@@ -79,7 +79,12 @@ end
 
 function Field:Harvest()
     self:PlaySound("Harvest")
+    
+    --temp
+    local playerCash = self.Owner:GetAttribute("Cash")
+    self.Owner:SetAttribute("Cash", playerCash + self.Teapot[1].CurrentValue)
 
+    --Deletes Teapot Instance and Clears Teapot Table--
     local teapotInstance = self.Teapot[1].Instance
     CollectionService:RemoveTag(teapotInstance, "Teapot")
 
@@ -88,10 +93,6 @@ function Field:Harvest()
     self.Teapot = {}
     self.Instance:SetAttribute("Watered", false)
     self.Instance:SetAttribute("Taken", false)
-
-    --temp
-    local playerCash = self.Owner:GetAttribute("Cash")
-    self.Owner:SetAttribute("Cash", playerCash + 50)
 end
 
 return Field

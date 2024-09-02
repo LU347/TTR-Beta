@@ -12,6 +12,8 @@ function Teapot.new(owner, name, fieldInstance)
     self.Owner = owner
     self.Name = name
     self.FieldInstance = fieldInstance
+    self.CurrentValue = 0
+    self.MaxValue = TeapotData[self.Name].MaxValue
     self.Instance = nil
     self.Size = 0
     self:Init()
@@ -24,12 +26,6 @@ function Teapot:Init()
         local random = Random.new()
         local angle = random:NextInteger(0, 180)
         return CFrame.fromEulerAngles(0, angle, 0)
-    end
-
-    local function initializeAttributes()
-        self.Instance:SetAttribute("Owner", self.Owner.UserId)
-        self.Instance:SetAttribute("Location", self.FieldInstance.Name)
-        self.Instance:SetAttribute("Growing", false)
     end
 
     local teapot = ReplicatedStorage.Teapots:FindFirstChild(self.Name)
@@ -45,20 +41,17 @@ function Teapot:Init()
     self.Instance.Parent = self.FieldInstance
     self.Size = self.Instance.Size --tbd
 
-    initializeAttributes()
+    --Initialize Teapot Attributes--
+    self.Instance:SetAttribute("Owner", self.Owner.UserId)
+    self.Instance:SetAttribute("Location", self.FieldInstance.Name)
+    self.Instance:SetAttribute("Growing", false)
+
+    local currentValue = Instance.new("IntValue")
+    currentValue.Name = "CurrentValue"
+    currentValue.Value = 0
+    currentValue.Parent = self.Instance
 
     CollectionService:AddTag(self.Instance, "Teapot")
-
-    --This is not being triggered
-    --[[
-    self.Instance:GetAttributeChangedSignal("Growing"):Connect(function()
-        local isGrowing = self.Instance:GetAttribute("Growing")
-        if not isGrowing then
-            self:Grow()
-            print("hello")
-        end
-    end)
-    ]]--
 end
 
 function Teapot:Grow()
@@ -80,6 +73,18 @@ function Teapot:Grow()
 
     local tweenMesh = TweenService:Create(self.Instance, tweenInfo, tweenGoal)
     tweenMesh:Play()
+
+    local currentValue = self.Instance:FindFirstChild("CurrentValue")
+    if currentValue then
+        local tweenValue = TweenService:Create(currentValue, tweenInfo, { Value = self.MaxValue })
+        tweenValue:Play()
+    else
+        print("value instance does not exist")
+    end
+
+    currentValue.Changed:Connect(function(newValue)
+        self.CurrentValue = newValue
+    end)
 end
 
 return Teapot
