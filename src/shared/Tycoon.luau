@@ -11,7 +11,6 @@ local Tycoon = {}
 Tycoon.__index = Tycoon
 
 local TemplatePlot = game.Workspace.TemplatePlot --replace
-local templateStarterFolder = TemplatePlot.StarterItems
 local templateItemsFolder = TemplatePlot.Items
 local templatePlotsFolder = TemplatePlot.Plots
 local templateButtonsFolder = TemplatePlot.Buttons
@@ -57,7 +56,7 @@ function Tycoon:Init()
     local tycoonPlots = templatePlotsFolder:Clone()
 
     for _, plot in tycoonPlots:GetChildren() do
-        changePartCFrame(plot)
+        self:ClonePart(plot)
         plot.Parent = plotsFolder
     end
     
@@ -65,31 +64,28 @@ function Tycoon:Init()
     local tycoonButtons = templateButtonsFolder:Clone()
 
     for _, button in tycoonButtons:GetChildren() do
-        changePartCFrame(button)
+        self:CloneModel(button)
         button.Parent = buttonsFolder
 
         local b = Button.new(self, button)
         table.insert(self.Buttons, b)
-    end
-
-    --Clone Starter Items--
-    for _, item in templateStarterFolder:GetChildren() do
-        local itemClone = item:Clone()
-        local itemCFrame = item:GetPivot()
-
-        if item.Name == "OwnerSign" then
-            local label = itemClone.Sign.OwnerLabel.SurfaceGui.Frame.TextLabel
-            label.Text = self.Owner.Name .. "'s Farm"
-        end
-        
-        itemClone:PivotTo(self:GetNewItemCFrame(itemCFrame))
-        itemClone.Parent = starterFolder
     end
 end
 
 function Tycoon:GetNewItemCFrame(itemCFrame) --For Models
     local relativeCFrame = TemplatePlot.CFrame:ToObjectSpace(itemCFrame)
     return self.Instance.CFrame:ToWorldSpace(relativeCFrame)
+end
+
+function Tycoon:CloneModel(model)
+    local modelCFrame = model:GetPivot()
+    local relativeCFrame = TemplatePlot.CFrame:ToObjectSpace(modelCFrame)
+    model:PivotTo(self.Instance.CFrame:ToWorldSpace(relativeCFrame))
+end
+
+function Tycoon:ClonePart(part)
+    local relativeCFrame = TemplatePlot.CFrame:ToObjectSpace(part.CFrame)
+    part.CFrame = self.Instance.CFrame:ToWorldSpace(relativeCFrame)
 end
 
 function Tycoon:CloneItem(item)

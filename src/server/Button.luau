@@ -12,7 +12,7 @@ local DEBOUNCE_COOLDOWN = 1.75
 function Button.new(tycoon, instance)
     local self = setmetatable({}, Button)
     self.Tycoon = tycoon
-    self.Instance = instance
+    self.Instance = instance.Head
     self.Debounce = false
     self.Upgradeable = instance:GetAttribute("Upgradeable")
     self.Cost = instance:GetAttribute("ItemCost")
