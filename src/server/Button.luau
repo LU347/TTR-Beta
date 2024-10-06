@@ -14,9 +14,9 @@ function Button.new(tycoon, instance)
     self.Tycoon = tycoon
     self.Instance = instance.Head
     self.Debounce = false
-    self.Upgradeable = instance:GetAttribute("Upgradeable")
-    self.Cost = instance:GetAttribute("ItemCost")
-    self.Item = instance:GetAttribute("ItemUnlock")
+    self.Upgradeable = instance.Head:GetAttribute("Upgradeable") and instance.Head:GetAttribute("Upgradeable") or false
+    self.Cost = instance.Head:GetAttribute("ItemCost")
+    self.Item = instance.Head:GetAttribute("ItemUnlock")
     self.TouchConnection = self.Instance.Touched:Connect(function(hit)
         self:OnTouch(hit)
     end)
@@ -72,7 +72,7 @@ function Button:upgradePlot()
 end
 
 function Button:updateButtonForUpgrade()
-    local buttonGui = self.Instance.BillboardGui
+    local buttonModel = self.Instance.Parent
     local nextUpgrade = ""
     local buttonLabels = {
         Plot_Medium = "Medium Plot: ",
@@ -101,7 +101,7 @@ function Button:updateButtonForUpgrade()
         if currentIndex < maxUpgrade then
             nextUpgrade = plotTypes[currentIndex + 1]
             self.Cost = currentIndex * 75 + (2 * self.Cost) -- new cost
-            self:updateButtonLabel(buttonGui, buttonLabels[nextUpgrade], self.Cost)
+            self:updateButtonLabel(buttonModel, buttonLabels[nextUpgrade], self.Cost)
             changeColor(buttonColors[currentIndex + 1])
         elseif currentIndex == maxUpgrade then
             self:Destroy()
@@ -110,7 +110,7 @@ function Button:updateButtonForUpgrade()
         nextUpgrade = "Lanterns" .. string.sub(self.Item, 6)
         self.Cost = self.Cost * 1.5 -- update
         self.Upgradeable = false
-        self:updateButtonLabel(buttonGui, buttonLabels["Lanterns"], self.Cost)
+        self:updateButtonLabel(buttonModel, buttonLabels["Lanterns"], self.Cost)
         changeColor(buttonColors[2])
     end
 
@@ -119,8 +119,8 @@ function Button:updateButtonForUpgrade()
     self.Instance:SetAttribute("Cost", self.Cost)
 end
 
-function Button:updateButtonLabel(buttonGui, label, cost)
-    buttonGui.TextLabel.Text = label .. tostring(cost)
+function Button:updateButtonLabel(buttonModel, label, cost)
+    buttonModel.Name = label .. tostring(cost)
 end
 
 function Button:Destroy()

@@ -102,15 +102,14 @@ function Tycoon:CloneItem(item)
     local itemCFrame
     
     if itemClone:IsA("Model") then
-        itemCFrame = itemClone:GetPivot()
-        itemClone:PivotTo(self:GetNewItemCFrame(itemCFrame))
-
+        self:CloneModel(itemClone)
+        --[[
         if string.sub(itemClone.Name, 1, 8) == "Lanterns" then
             TagLightBlocks(itemClone)
         end
+        ]]
     else
-        itemCFrame = itemClone.CFrame
-        itemClone.CFrame = self:GetNewItemCFrame(itemCFrame)
+        self:ClonePart(itemClone)
     end
     
     itemClone.Parent = self.Instance.Items
