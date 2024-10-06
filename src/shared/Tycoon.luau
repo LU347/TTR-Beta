@@ -43,15 +43,6 @@ function Tycoon:Init()
     plotsFolder.Name = "Plots"
     plotsFolder.Parent = self.Instance
 
-    local starterFolder = Instance.new("Folder")
-    starterFolder.Name = "StarterItems"
-    starterFolder.Parent = self.Instance
-
-    local function changePartCFrame(object)
-        local relativeCFrame = TemplatePlot.CFrame:ToObjectSpace(object.CFrame)
-        object.CFrame = self.Instance.CFrame:ToWorldSpace(relativeCFrame)
-    end
-
     --Initialize Plot Locations--
     local tycoonPlots = templatePlotsFolder:Clone()
 
@@ -70,11 +61,14 @@ function Tycoon:Init()
         local b = Button.new(self, button)
         table.insert(self.Buttons, b)
     end
-end
 
-function Tycoon:GetNewItemCFrame(itemCFrame) --For Models
-    local relativeCFrame = TemplatePlot.CFrame:ToObjectSpace(itemCFrame)
-    return self.Instance.CFrame:ToWorldSpace(relativeCFrame)
+    --Owner Sign
+    local ownerSign = TemplatePlot:WaitForChild("Sign")
+    local ownerClone = ownerSign:Clone()
+    local label = ownerClone.Part.SurfaceGui.Background.OwnerLabel
+    label.Text = self.Owner.Name .. "'s Tycoon"
+    self:CloneModel(ownerClone)
+    ownerClone.Parent = self.Instance
 end
 
 function Tycoon:CloneModel(model)
