@@ -11,7 +11,6 @@ local Tycoon = {}
 Tycoon.__index = Tycoon
 
 local TemplatePlot = game.Workspace.TemplatePlot --replace
-local templateStarterFolder = TemplatePlot.StarterItems
 local templateItemsFolder = TemplatePlot.Items
 local templatePlotsFolder = TemplatePlot.Plots
 local templateButtonsFolder = TemplatePlot.Buttons
@@ -44,20 +43,11 @@ function Tycoon:Init()
     plotsFolder.Name = "Plots"
     plotsFolder.Parent = self.Instance
 
-    local starterFolder = Instance.new("Folder")
-    starterFolder.Name = "StarterItems"
-    starterFolder.Parent = self.Instance
-
-    local function changePartCFrame(object)
-        local relativeCFrame = TemplatePlot.CFrame:ToObjectSpace(object.CFrame)
-        object.CFrame = self.Instance.CFrame:ToWorldSpace(relativeCFrame)
-    end
-
     --Initialize Plot Locations--
     local tycoonPlots = templatePlotsFolder:Clone()
 
     for _, plot in tycoonPlots:GetChildren() do
-        changePartCFrame(plot)
+        self:ClonePart(plot)
         plot.Parent = plotsFolder
     end
     
@@ -65,31 +55,31 @@ function Tycoon:Init()
     local tycoonButtons = templateButtonsFolder:Clone()
 
     for _, button in tycoonButtons:GetChildren() do
-        changePartCFrame(button)
+        self:CloneModel(button)
         button.Parent = buttonsFolder
 
         local b = Button.new(self, button)
         table.insert(self.Buttons, b)
     end
 
-    --Clone Starter Items--
-    for _, item in templateStarterFolder:GetChildren() do
-        local itemClone = item:Clone()
-        local itemCFrame = item:GetPivot()
-
-        if item.Name == "OwnerSign" then
-            local label = itemClone.Sign.OwnerLabel.SurfaceGui.Frame.TextLabel
-            label.Text = self.Owner.Name .. "'s Farm"
-        end
-        
-        itemClone:PivotTo(self:GetNewItemCFrame(itemCFrame))
-        itemClone.Parent = starterFolder
-    end
+    --Owner Sign
+    local ownerSign = TemplatePlot:WaitForChild("Sign")
+    local ownerClone = ownerSign:Clone()
+    local label = ownerClone.Part.SurfaceGui.Background.OwnerLabel
+    label.Text = self.Owner.Name .. "'s Tycoon"
+    self:CloneModel(ownerClone)
+    ownerClone.Parent = self.Instance
 end
 
-function Tycoon:GetNewItemCFrame(itemCFrame) --For Models
-    local relativeCFrame = TemplatePlot.CFrame:ToObjectSpace(itemCFrame)
-    return self.Instance.CFrame:ToWorldSpace(relativeCFrame)
+function Tycoon:CloneModel(model)
+    local modelCFrame = model:GetPivot()
+    local relativeCFrame = TemplatePlot.CFrame:ToObjectSpace(modelCFrame)
+    model:PivotTo(self.Instance.CFrame:ToWorldSpace(relativeCFrame))
+end
+
+function Tycoon:ClonePart(part)
+    local relativeCFrame = TemplatePlot.CFrame:ToObjectSpace(part.CFrame)
+    part.CFrame = self.Instance.CFrame:ToWorldSpace(relativeCFrame)
 end
 
 function Tycoon:CloneItem(item)
@@ -106,15 +96,14 @@ function Tycoon:CloneItem(item)
     local itemCFrame
     
     if itemClone:IsA("Model") then
-        itemCFrame = itemClone:GetPivot()
-        itemClone:PivotTo(self:GetNewItemCFrame(itemCFrame))
-
+        self:CloneModel(itemClone)
+        --[[
         if string.sub(itemClone.Name, 1, 8) == "Lanterns" then
             TagLightBlocks(itemClone)
         end
+        ]]
     else
-        itemCFrame = itemClone.CFrame
-        itemClone.CFrame = self:GetNewItemCFrame(itemCFrame)
+        self:ClonePart(itemClone)
     end
     
     itemClone.Parent = self.Instance.Items
