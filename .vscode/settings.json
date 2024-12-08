@@ -1,0 +1,14 @@
+{
+    "Lua.diagnostics.globals": [
+        "game",
+        "TweenInfo",
+        "Enum",
+        "Color3",
+        "onPlayerAdded",
+        "wait",
+        "onPlayerRemoving",
+        "Vector3",
+        "Instance",
+        "task"
+    ]
+}

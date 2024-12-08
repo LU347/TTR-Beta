@@ -29,6 +29,7 @@ function CreateTycoon(player)
 end
 
 function onPlayerAdded(player)
+    --Initialize Player Stats and Spawn them in their tycoon
     if player.Name == "Soccerplayer25" then
         player:SetAttribute("Cash", 1000000)
     else
