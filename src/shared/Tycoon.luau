@@ -7,6 +7,8 @@ local PlantSeed = ReplicatedStorage.RemoteEvents.PlantSeed
 local WaterField = ReplicatedStorage.RemoteEvents.WaterField
 local HarvestPot = ReplicatedStorage.RemoteEvents.HarvestPot
 
+local SpawnTag = "PlayerSpawn"
+
 local Tycoon = {}
 Tycoon.__index = Tycoon
 
@@ -69,6 +71,14 @@ function Tycoon:Init()
     label.Text = self.Owner.Name .. "'s Tycoon"
     self:CloneModel(ownerClone)
     ownerClone.Parent = self.Instance
+
+    --Player Spawn
+    local playerSpawn = TemplatePlot:WaitForChild("PlayerSpawn")
+    local playerSpawnClone = playerSpawn:Clone()
+    self:ClonePart(playerSpawnClone)
+    CollectionService:AddTag(playerSpawnClone, SpawnTag)
+    playerSpawnClone:SetAttribute("Owner", self.Owner.UserId)
+    playerSpawnClone.Parent = self.Instance
 end
 
 function Tycoon:CloneModel(model)
