@@ -12,10 +12,10 @@ local minutesAfterMidnight = START_TIME * 60
 local waitTime = 60 / TIME_SPEED
 local debounce = true
 
-local tweenInfo = TweenInfo.new(3)
-local nightEffect = game.Lighting.NightEffect
-
 local function tweenLighting(contrast, brightness)
+    local tweenInfo = TweenInfo.new(3)
+    local nightEffect = game.Lighting.NightEffect
+    
     local contrastTransition = TweenService:Create(nightEffect, tweenInfo, { Contrast = contrast })
     contrastTransition:Play()
 

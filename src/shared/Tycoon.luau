@@ -93,25 +93,10 @@ function Tycoon:ClonePart(part)
 end
 
 function Tycoon:CloneItem(item)
-    local function TagLightBlocks(lanterns)
-        local lightsFolder = lanterns.LightBlocks:GetChildren()
-        for _, lightblock in lightsFolder do
-            local light = lightblock.PointLight
-            CollectionService:AddTag(light, "LightBlock")
-        end
-
-    end
-
     local itemClone = templateItemsFolder:FindFirstChild(item):Clone()
-    local itemCFrame
     
     if itemClone:IsA("Model") then
         self:CloneModel(itemClone)
-        --[[
-        if string.sub(itemClone.Name, 1, 8) == "Lanterns" then
-            TagLightBlocks(itemClone)
-        end
-        ]]
     else
         self:ClonePart(itemClone)
     end
