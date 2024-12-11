@@ -1,9 +1,6 @@
-local seedTypes = {
-    ["Small"] = { Order = 1, GrowthRate = 3},
-    ["Medium"] = { Order = 2, GrowthRate = 7},
-    ["Large"] = { Order = 3, GrowthRate = 8},
-    ["X-Large"] = { Order = 4, GrowthRate = 10}
-}
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local seedTypes = require(ReplicatedStorage.Shared.Enums).seedTypes
 
 local teapotData = {
     ["Adurite"] = { MaxSize = Vector3.new(5,4,10), MaxValue = 50, Type = seedTypes.Small },

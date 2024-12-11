@@ -17,7 +17,6 @@ function Plot.new(player, location, tycoonInstance, type)
     self.Tycoon = tycoonInstance
     self.Type = type
     self.Fields = {}
-    
     self:Init()
 
     return self

@@ -4,6 +4,8 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local TweenService = game:GetService("TweenService")
 
 local Teapot = require(ServerScriptService.Server.Teapot)
+local TeapotData = require(ServerScriptService.Server.TeapotData)
+local Enums = require(ReplicatedStorage.Shared.Enums)
 local PlaySoundEvent = ReplicatedStorage.RemoteEvents.PlaySound
 
 local DRY_COLOR = Color3.fromRGB(86,66,54)
@@ -58,12 +60,27 @@ function Field:PlaySound(action)
 end
 
 function Field:Plant(seed)
+    local seedType = TeapotData[seed] and TeapotData[seed].Type
+    local fieldType = Enums.fieldTypes[self.Type]
+
+    if not seedType or not fieldType then
+        warn("Invalid seed or field type")
+        return
+    end
+
+    print(seedType.Order .. " " .. fieldType.Order)
+
+    if seedType.Order > fieldType.Order then
+        return
+    end
+
     self:PlaySound("Plant")
     self.Instance:SetAttribute("Taken", true)
-
+        
     local teapot = Teapot.new(self.Owner, seed, self.Instance)
     table.insert(self.Teapot, teapot)
-
+    
+    --This should be in the getattributechanged func
     if self.Instance:GetAttribute("Watered") then
         teapot:Grow()
     end

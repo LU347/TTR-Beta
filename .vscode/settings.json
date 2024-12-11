@@ -12,6 +12,7 @@
         "task",
         "Random",
         "CFrame",
-        "script"
+        "script",
+        "seedTypes"
     ]
 }
