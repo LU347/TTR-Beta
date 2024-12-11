@@ -6,6 +6,9 @@ local TweenService = game:GetService("TweenService")
 local Teapot = require(ServerScriptService.Server.Teapot)
 local PlaySoundEvent = ReplicatedStorage.RemoteEvents.PlaySound
 
+local DRY_COLOR = Color3.fromRGB(86,66,54)
+local WET_COLOR = Color3.fromRGB(77, 61, 51)
+
 local Field = {}
 Field.__index = Field
 
@@ -39,15 +42,13 @@ function Field:Init()
     self.Connection = self.Instance:GetAttributeChangedSignal("Watered"):Connect(function()
         if self.Instance:GetAttribute("Watered") then
             self:PlaySound("Water")
-            local wetColor = Color3.fromRGB(77, 61, 51)
-            tweenFieldColor(self.Instance, wetColor)
+            tweenFieldColor(self.Instance, WET_COLOR)
 
             if #self.Teapot == 1 then
                 self.Teapot[1]:Grow()
             end
         else
-            local dryColor = Color3.fromRGB(86,66,54)
-            tweenFieldColor(self.Instance, dryColor)
+            tweenFieldColor(self.Instance, DRY_COLOR)
         end
     end)
 end
@@ -56,7 +57,6 @@ function Field:PlaySound(action)
     PlaySoundEvent:FireClient(self.Owner, action)
 end
 
---Bug: Teapot doesn't grow when the field is already watered
 function Field:Plant(seed)
     self:PlaySound("Plant")
     self.Instance:SetAttribute("Taken", true)
@@ -80,9 +80,17 @@ end
 function Field:Harvest()
     self:PlaySound("Harvest")
     
-    --temp
+    --TODO: Module that handles player attribute updates
     local playerCash = self.Owner:GetAttribute("Cash")
     self.Owner:SetAttribute("Cash", playerCash + self.Teapot[1].CurrentValue)
+
+    --Debug Output
+    print("Field Table")
+    print(self)
+    print("Teapot Table")
+    print(self.Teapot)
+    print("Teapot[1]")
+    print(self.Teapot[1])
 
     --Deletes Teapot Instance and Clears Teapot Table--
     local teapotInstance = self.Teapot[1].Instance

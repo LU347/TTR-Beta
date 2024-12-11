@@ -12,10 +12,12 @@ function Teapot.new(owner, name, fieldInstance)
     self.Owner = owner
     self.Name = name
     self.FieldInstance = fieldInstance
-    self.CurrentValue = 0
+    self.CurrentSize = 0 --Saved
+    self.CurrentValue = 0 --Saved
+    self.MaxSize = TeapotData[self.Name].MaxSize
     self.MaxValue = TeapotData[self.Name].MaxValue
+
     self.Instance = nil
-    self.Size = 0
     self:Init()
     
     return self
@@ -51,6 +53,12 @@ function Teapot:Init()
     currentValue.Value = 0
     currentValue.Parent = self.Instance
 
+    --Instance Size Change Signal
+    self.Instance:GetPropertyChangedSignal("Size"):Connect(function()
+        self.CurrentSize = self.Instance.Size
+    end)
+
+
     CollectionService:AddTag(self.Instance, "Teapot")
 end
 
@@ -84,6 +92,7 @@ function Teapot:Grow()
 
     currentValue.Changed:Connect(function(newValue)
         self.CurrentValue = newValue
+        print(self.CurrentValue)
     end)
 end
 

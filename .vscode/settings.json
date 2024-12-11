@@ -9,6 +9,8 @@
         "onPlayerRemoving",
         "Vector3",
         "Instance",
-        "task"
+        "task",
+        "Random",
+        "CFrame"
     ]
 }
