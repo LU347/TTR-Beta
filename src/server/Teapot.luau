@@ -2,7 +2,7 @@ local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 
-local TeapotData = require(ReplicatedStorage.Shared.TeapotData)
+local TeapotData = require(script.Parent.TeapotData)
 
 local Teapot = {}
 Teapot.__index = Teapot
@@ -16,7 +16,7 @@ function Teapot.new(owner, name, fieldInstance)
     self.CurrentValue = 0 --Saved
     self.MaxSize = TeapotData[self.Name].MaxSize
     self.MaxValue = TeapotData[self.Name].MaxValue
-
+    self.Type = TeapotData[self.Name].Type
     self.Instance = nil
     self:Init()
     
@@ -92,7 +92,6 @@ function Teapot:Grow()
 
     currentValue.Changed:Connect(function(newValue)
         self.CurrentValue = newValue
-        print(self.CurrentValue)
     end)
 end
 
