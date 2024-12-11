@@ -7,11 +7,18 @@ local TeapotData = require(script.Parent.TeapotData)
 local Teapot = {}
 Teapot.__index = Teapot
 
+local random = Random.new()
+
+local function getRandomizedAngle()
+    local angle = random:NextInteger(0, 180)
+    return CFrame.fromEulerAngles(0, angle, 0)
+end
+
 function Teapot.new(owner, name, fieldInstance)
     local self = setmetatable({}, Teapot)
     self.Owner = owner
-    self.Name = name
-    self.FieldInstance = fieldInstance
+    self.Name = name    --Saved
+    self.FieldInstance = fieldInstance --Saved
     self.CurrentSize = 0 --Saved
     self.CurrentValue = 0 --Saved
     self.MaxSize = TeapotData[self.Name].MaxSize
@@ -19,17 +26,10 @@ function Teapot.new(owner, name, fieldInstance)
     self.Type = TeapotData[self.Name].Type
     self.Instance = nil
     self:Init()
-    
     return self
 end
 
 function Teapot:Init()
-    local function getRandomizedAngle()
-        local random = Random.new()
-        local angle = random:NextInteger(0, 180)
-        return CFrame.fromEulerAngles(0, angle, 0)
-    end
-
     local teapot = ReplicatedStorage.Teapots:FindFirstChild(self.Name)
     local teapotCFrame = CFrame.new(
         self.FieldInstance.CFrame.X,
@@ -41,7 +41,6 @@ function Teapot:Init()
     self.Instance:PivotTo(teapotCFrame)
     self.Instance.Anchored = true
     self.Instance.Parent = self.FieldInstance
-    self.Size = self.Instance.Size --tbd
 
     --Initialize Teapot Attributes--
     self.Instance:SetAttribute("Owner", self.Owner.UserId)
@@ -63,11 +62,12 @@ function Teapot:Init()
 end
 
 function Teapot:Grow()
-    local heightDiff = TeapotData[self.Name].MaxSize.Y / 2
-    local growTime = TeapotData[self.Name].MaxSize.Z * 5
+    local heightDiff = self.MaxSize.Y / 2
+    local growTime = self.MaxSize.Z * self.Type.GrowthRate
+    print(growTime)
 
     local tweenGoal = {}
-    tweenGoal.Size = self.Instance.Size + TeapotData[self.Name].MaxSize
+    tweenGoal.Size = self.Instance.Size + self.MaxSize
     tweenGoal.Position = Vector3.new(self.Instance.Position.X, self.Instance.Position.Y + heightDiff, self.Instance.Position.Z)
 
     local tweenInfo = TweenInfo.new(
@@ -86,13 +86,13 @@ function Teapot:Grow()
     if currentValue then
         local tweenValue = TweenService:Create(currentValue, tweenInfo, { Value = self.MaxValue })
         tweenValue:Play()
+
+        currentValue.Changed:Connect(function(newValue)
+            self.CurrentValue = newValue
+        end)
     else
         print("value instance does not exist")
     end
-
-    currentValue.Changed:Connect(function(newValue)
-        self.CurrentValue = newValue
-    end)
 end
 
 return Teapot

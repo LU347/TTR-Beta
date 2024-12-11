@@ -1,8 +1,8 @@
 local seedTypes = {
-    ["Small"] = { Order = 1, GrowthRate = 1},
-    ["Medium"] = { Order = 2, GrowthRate = 0.8},
-    ["Large"] = { Order = 3, GrowthRate = 0.75},
-    ["X-Large"] = { Order = 4, GrowthRate = 0.7}
+    ["Small"] = { Order = 1, GrowthRate = 3},
+    ["Medium"] = { Order = 2, GrowthRate = 7},
+    ["Large"] = { Order = 3, GrowthRate = 8},
+    ["X-Large"] = { Order = 4, GrowthRate = 10}
 }
 
 local teapotData = {
