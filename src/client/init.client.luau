@@ -29,7 +29,7 @@ local function onInputBegan(input, _gameProcessed)
     
     if target:HasTag("Field") then
         if currentAction == "Plant" and not target:GetAttribute("Taken") then
-            PlantSeed:FireServer(target, "Original")
+            PlantSeed:FireServer(target, "Adurite")
         elseif currentAction == "Water" and not target:GetAttribute("Watered") then
             WaterField:FireServer(target)
         end
