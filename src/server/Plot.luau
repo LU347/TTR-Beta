@@ -1,11 +1,5 @@
-local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TweenService = game:GetService("TweenService")
-
-local playSound = ReplicatedStorage.RemoteEvents.PlaySound
-
 local Field = require(game.ServerScriptService.Server.Field)
-local Teapot = require(game.ServerScriptService.Server.Teapot)
 
 local Plot = {}
 Plot.__index = Plot
@@ -50,6 +44,7 @@ end
 function Plot:Upgrade(newPlot)
     self.PlotInstance:Destroy()
     self.Type = newPlot
+    --need to update connections, instance, and teapot instance
     self:Init()
 end
 
@@ -57,7 +52,7 @@ function Plot:Clean()
     if self.PlotInstance then
         self.PlotInstance:Destroy()
     end
-   self = {}
+    self = {}
 end
 
 return Plot

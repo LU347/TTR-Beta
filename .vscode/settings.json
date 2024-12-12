@@ -13,6 +13,7 @@
         "Random",
         "CFrame",
         "script",
-        "seedTypes"
+        "seedTypes",
+        "self"
     ]
 }
