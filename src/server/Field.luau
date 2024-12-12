@@ -9,7 +9,7 @@ local Enums = require(ReplicatedStorage.Shared.Enums)
 local PlaySoundEvent = ReplicatedStorage.RemoteEvents.PlaySound
 
 local DRY_COLOR = Color3.fromRGB(86,66,54)
-local WET_COLOR = Color3.fromRGB(77, 61, 51)
+local WET_COLOR = Color3.fromRGB(62, 53, 47)
 
 local Field = {}
 Field.__index = Field
@@ -67,8 +67,6 @@ function Field:Plant(seed)
         warn("Invalid seed or field type")
         return
     end
-
-    print(seedType.Order .. " " .. fieldType.Order)
 
     if seedType.Order > fieldType.Order then
         return

@@ -50,6 +50,7 @@ function Tycoon:Init()
 
     for _, plot in tycoonPlots:GetChildren() do
         self:ClonePart(plot)
+        plot.Transparency = 1
         plot.Parent = plotsFolder
     end
     

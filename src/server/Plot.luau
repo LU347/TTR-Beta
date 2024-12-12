@@ -25,34 +25,28 @@ end
 function Plot:Init()
     local placeHolder = self.Tycoon.Plots:FindFirstChild(self.Location)
     local plotModel = ReplicatedStorage.Assets:FindFirstChild(self.Type)
-    local plotClone = plotModel:Clone()
+    if not plotModel then
+        warn("Plot model not found: " .. self.Type)
+        return
+    end
 
+    local plotClone = plotModel:Clone()
     self.PlotInstance = plotClone
     self.PlotInstance.Parent = placeHolder
-        
     self.PlotInstance:PivotTo(placeHolder.CFrame)
     placeHolder:SetAttribute("Owner", self.Owner.UserId)
 
-    local function initializeField(field)
-        --Replaces default field name from 1 to A1 or B1 .. depending on PlotLocation
-        local newName = string.sub(self.Location, 5, 6) .. field.Name
-        field.Name = newName
-
-        --Creates a field object and inserts it into self.Fields--
-        local fieldType = string.sub(self.Type, 6, string.len(self.Type))
-        self.Fields[field.Name] = Field.new(self.Owner, field, fieldType)
-    end
-
     --Initialize Fields--
+    local locationSuffix = string.sub(self.Location, 5, 6)
+    local fieldType = string.sub(self.Type, 6)
     for _, field in plotClone:GetChildren() do
         if field.Name ~= "Base" then
-            initializeField(field)    
+            field.Name = locationSuffix .. field.Name
+            self.Fields[field.Name] = Field.new(self.Owner, field, fieldType)
         end
     end
 end
 
---TODO: Clear old fiield tables and reinitialize
---Keep existing teapots
 function Plot:Upgrade(newPlot)
     self.PlotInstance:Destroy()
     self.Type = newPlot
@@ -60,7 +54,9 @@ function Plot:Upgrade(newPlot)
 end
 
 function Plot:Clean()
-   self.PlotInstance:Destroy()
+    if self.PlotInstance then
+        self.PlotInstance:Destroy()
+    end
    self = {}
 end
 
