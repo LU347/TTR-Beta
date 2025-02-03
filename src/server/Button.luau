@@ -77,7 +77,7 @@ function Button:updateButtonForUpgrade()
     local buttonLabels = {
         Plot_Medium = "Medium Plot: ",
         Plot_Large = "Large Plot: ",
-        Plot_XLarge = "Extra Large Plot: ",
+        Plot_ExtraLarge = "Extra Large Plot: ",
         Lanterns = "Lanterns: "
     }
 
@@ -95,7 +95,7 @@ function Button:updateButtonForUpgrade()
 
     if string.sub(self.Item, 1, 4) == "Plot" then
         local maxUpgrade = self.Instance:GetAttribute("MaxUpgrade")
-        local plotTypes = {"Plot_Small", "Plot_Medium", "Plot_Large", "Plot_XLarge"}
+        local plotTypes = {"Plot_Small", "Plot_Medium", "Plot_Large", "Plot_ExtraLarge"}
         local currentIndex = table.find(plotTypes, self.Item)
 
         if currentIndex < maxUpgrade then

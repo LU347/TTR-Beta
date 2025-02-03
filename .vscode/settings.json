@@ -11,6 +11,9 @@
         "Instance",
         "task",
         "Random",
-        "CFrame"
+        "CFrame",
+        "script",
+        "seedTypes",
+        "self"
     ]
 }
