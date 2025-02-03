@@ -41,11 +41,43 @@ function Plot:Init()
     end
 end
 
+--TODO: Replace Instance that stores the current value and tween it a different way
+--Get rid of that nested loop
 function Plot:Upgrade(newPlot)
+    local oldFields = self.Fields
+    local teapotStorage = {}
+
+    for fieldName, field in pairs(oldFields) do
+        for _, child in pairs(field.Instance:GetChildren()) do
+            if child and child:HasTag("Teapot") then
+                child.Parent = ReplicatedStorage
+                teapotStorage[fieldName] = child
+                break
+            end
+        end
+    end
+
     self.PlotInstance:Destroy()
+
     self.Type = newPlot
-    --need to update connections, instance, and teapot instance
+
     self:Init()
+
+    for _, field in pairs(self.PlotInstance:GetChildren()) do
+        if field.Name ~= "Base" then
+            local oldField = oldFields[field.Name]
+            if oldField then
+                self.Fields[field.Name] = oldField
+                oldField.Instance = field
+
+                local teapot = teapotStorage[field.Name]
+                if teapot then
+                    teapot.Parent = field 
+                    teapot:PivotTo(CFrame.new(field.CFrame.X, field.CFrame.Y + 0.5, field.CFrame.Z)) -- Position it correctly
+                end
+            end
+        end
+    end
 end
 
 function Plot:Clean()
