@@ -19,11 +19,30 @@ function PlayerData.new(player)
         Plots = {}, -- Will store unlocked plots and its field data
     }
 
-    self:loadData(player)
-
     ServerPlayerData[player.UserId] = self
 
     return self
+end
+
+function PlayerData:getInventory()
+    return self.Inventory
+end
+
+function PlayerData:addInventory(item, quantity)
+    if (self.Inventory[item]) then
+        self.Inventory[item] = self.Inventory[item] + quantity
+    else
+        self.Inventory[item] = quantity
+    end
+end
+
+function PlayerData:removeInventory(item, quantity)
+    if self.Inventory[item] then
+        self.Inventory[item] = self.Inventory[item] - quantity
+        if self.Inventory[item] <= 0 then
+            self.Inventory[item] = nil
+        end
+    end
 end
 
 function PlayerData:getCash()
