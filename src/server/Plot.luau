@@ -1,3 +1,4 @@
+local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Field = require(game.ServerScriptService.Server.Field)
 
@@ -43,19 +44,73 @@ end
 
 --TODO: Replace Instance that stores the current value and tween it a different way
 --Get rid of that nested loop
-function Plot:Upgrade(newPlotName)
-    local oldFieldTables = {}
 
-    oldFieldTables = self.Fields
-    --Instance, Type, and Teapot (if present) need to be updated
-    
-    for _, field in pairs(self.Fields) do
-        field["Instance"].Parent = self.PlotInstance --Not updating the parent for some reason
-        print(field["Instance"].Parent)
+local function findFirstChildWithTag(parent, tag)
+    if parent then
+        for _, child in ipairs(parent:GetChildren()) do
+            if child:HasTag(tag) then
+                return child
+            end
+        end
     end
 
-    print(oldFieldTables)
+    return nil
 end
+
+function Plot:Upgrade(newPlotName)
+    -- Safety check: Ensure no teapots exist before upgrading
+    for _, field in pairs(self.Fields) do
+        print(field["Teapot"].Instance) -- returning nil
+        local teapot = findFirstChildWithTag(field["Teapot"].Instance, "Teapot")
+        if teapot then
+            warn("Cannot upgrade: Teapots still present in field " .. field.Instance.Name)
+            return
+        end
+    end
+
+    -- Store reference to placeholder
+    local placeHolder = self.Tycoon.Plots:FindFirstChild(self.Location)
+    if not placeHolder then
+        warn("Placeholder not found at location: " .. self.Location)
+        return
+    end
+
+    -- Clean up old plot instance and fields
+    if self.PlotInstance then
+        self.PlotInstance:Destroy()
+        self.PlotInstance = nil
+    end
+    self.Fields = {}
+
+    -- Load new plot model
+    local newPlotModel = ReplicatedStorage.Assets:FindFirstChild(newPlotName)
+    if not newPlotModel then
+        warn("New plot model not found: " .. newPlotName)
+        return
+    end
+
+    -- Clone and place new plot
+    local newClone = newPlotModel:Clone()
+    self.PlotInstance = newClone
+    self.PlotInstance.Parent = placeHolder
+    self.PlotInstance:PivotTo(placeHolder.CFrame)
+    placeHolder:SetAttribute("Owner", self.Owner.UserId)
+
+    -- Update type
+    self.Type = newPlotName
+
+    -- Reinitialize Fields
+    local locationSuffix = string.sub(self.Location, 5, 6)
+    local fieldType = string.sub(self.Type, 6)
+    for _, field in newClone:GetChildren() do
+        if field.Name ~= "Base" then
+            field.Name = locationSuffix .. field.Name
+            self.Fields[field.Name] = Field.new(self.Owner, field, fieldType)
+        end
+    end
+end
+
+
 
 function Plot:Clean()
     if self.PlotInstance then
