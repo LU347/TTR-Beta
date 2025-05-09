@@ -60,11 +60,8 @@ end
 function Plot:Upgrade(newPlotName)
     -- Safety check: Ensure no teapots exist before upgrading
     for _, field in pairs(self.Fields) do
-        print(field["Teapot"].Instance) -- returning nil
-        local teapot = findFirstChildWithTag(field["Teapot"].Instance, "Teapot")
-        if teapot then
-            warn("Cannot upgrade: Teapots still present in field " .. field.Instance.Name)
-            return
+        if field.IsTaken == true then
+            return false
         end
     end
 
@@ -108,9 +105,9 @@ function Plot:Upgrade(newPlotName)
             self.Fields[field.Name] = Field.new(self.Owner, field, fieldType)
         end
     end
+
+    return true
 end
-
-
 
 function Plot:Clean()
     if self.PlotInstance then

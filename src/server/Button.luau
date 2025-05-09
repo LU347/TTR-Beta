@@ -31,6 +31,7 @@ end
 
 function Button:OnTouch(hit)
     if self.Debounce then return end
+
     local player = Players:GetPlayerFromCharacter(hit.Parent)
     if not player or player.UserId ~= self.Tycoon.Owner.UserId then
         return
@@ -39,9 +40,17 @@ function Button:OnTouch(hit)
     local playerCash = player:GetAttribute("Cash")
     if playerCash >= self.Cost then
         self.Debounce = true
-        playSound:FireClient(self.Tycoon.Owner, "Buy")
-        player:SetAttribute("Cash", playerCash - self.Cost)
-        self:UnlockItem()
+       
+        local success = self:UnlockItem()
+        if success then
+            player:SetAttribute("Cash", playerCash - self.Cost)
+            playSound:FireClient(self.Tycoon.Owner, "Buy")
+            self:UpdateButtonForUpgrade()
+        end
+
+        wait(DEBOUNCE_COOLDOWN)
+
+        self.Debounce = false
     end
 end
 
@@ -49,17 +58,17 @@ function Button:UnlockItem()
     if self.Upgradeable then
         --Plots are the only items that can be upgraded for now
         if string.sub(self.Item, 1, 4) == "Plot" then
-            self:UpgradePlot()
-            self:UpdateButtonForUpgrade()
+            local success = self:UpgradePlot()
+            if not success then
+                return false
+            end
         end
     else
         self:UnlockTycoonItem()
         self:Destroy()
     end
 
-    wait(DEBOUNCE_COOLDOWN)
-
-    self.Debounce = false
+    return true
 end
 
 function Button:UnlockTycoonItem()
@@ -69,12 +78,15 @@ end
 
 function Button:UpgradePlot()
     self.Location = self.Instance:GetAttribute("Location")
+
     if self.Tycoon.Plots[self.Location] then
-        self.Tycoon.Plots[self.Location]:Upgrade(self.Item)
+        return self.Tycoon.Plots[self.Location]:Upgrade(self.Item)
     else
         local plot = Plot.new(self.Tycoon.Owner, self.Location, self.Tycoon.Instance, self.Item)
         self.Tycoon.Plots[self.Location] = plot
     end
+
+    return true
 end
 
 -- self.Cost = currentIndex * 75 + (2 * self.Cost) -- new cost

@@ -20,6 +20,7 @@ function Field.new(owner, instance, type)
     self.Instance = instance
     self.Type = type
     self.Teapot = {}
+    self.IsTaken = false
     self:Init()
     return self
 end
@@ -73,6 +74,7 @@ function Field:Plant(seed)
     end
 
     self:PlaySound("Plant")
+    self.IsTaken = true
     self.Instance:SetAttribute("Taken", true)
         
     local teapot = Teapot.new(self.Owner, seed, self.Instance)
@@ -107,6 +109,8 @@ function Field:Harvest()
     print("Teapot[1]")
     print(self.Teapot[1])
 
+    self.IsTaken = false
+
     --Deletes Teapot Instance and Clears Teapot Table--
     local teapotInstance = self.Teapot[1].Instance
     CollectionService:RemoveTag(teapotInstance, "Teapot")
@@ -116,6 +120,18 @@ function Field:Harvest()
     self.Teapot = {}
     self.Instance:SetAttribute("Watered", false)
     self.Instance:SetAttribute("Taken", false)
+end
+
+function Field:GetTeapotTable()
+    return self.Teapot
+end
+
+function Field:GetTeapotInstance()
+    if self.Teapot[1] then
+        return self.Teapot[1].Instance
+    end
+
+    return nil
 end
 
 return Field
