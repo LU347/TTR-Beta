@@ -32,27 +32,39 @@ end
 function Button:OnTouch(hit)
     if self.Debounce then return end
 
-    local player = Players:GetPlayerFromCharacter(hit.Parent)
-    if not player or player.UserId ~= self.Tycoon.Owner.UserId then
-        return
+    local character = hit.Parent
+    local player = Players:GetPlayerFromCharacter(character)
+    if not player then return end
+
+    local owner = self.Tycoon.Owner
+    if player.UserId ~= owner.UserId then return end
+
+    self.Debounce = true
+
+    local function resetDebounce()
+        task.wait(DEBOUNCE_COOLDOWN)
+        self.Debounce = false
     end
 
     local playerCash = player:GetAttribute("Cash")
-    if playerCash >= self.Cost then
-        self.Debounce = true
-       
-        local success = self:UnlockItem()
-        if success then
-            player:SetAttribute("Cash", playerCash - self.Cost)
-            playSound:FireClient(self.Tycoon.Owner, "Buy")
-            self:UpdateButtonForUpgrade()
-        end
-
-        wait(DEBOUNCE_COOLDOWN)
-
-        self.Debounce = false
+    if playerCash < self.Cost then
+        playSound:FireClient(owner, "Error")
+        resetDebounce()
+        return
     end
+
+    local success = self:UnlockItem()
+    if success then
+        player:SetAttribute("Cash", playerCash - self.Cost)
+        playSound:FireClient(owner, "Buy")
+        self:UpdateButtonForUpgrade()
+    else
+        playSound:FireClient(owner, "Error")
+    end
+
+    resetDebounce()
 end
+
 
 function Button:UnlockItem()
     if self.Upgradeable then

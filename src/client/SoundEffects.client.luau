@@ -5,6 +5,7 @@ local soundFolder = ReplicatedStorage.Assets.SoundFX
 
 local soundEffects = {
     Buy = soundFolder:WaitForChild("Buy"),
+    Error = soundFolder:WaitForChild("ErrorSound"),
     Harvest = {
         soundFolder:WaitForChild("HighPop1"),
         soundFolder:WaitForChild("HighPop2"),
