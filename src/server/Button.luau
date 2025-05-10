@@ -21,6 +21,7 @@ function Button.new(tycoon, instance)
     self.Instance = instance.Head
     self.Debounce = false
     self.Upgradeable = instance.Head:GetAttribute("Upgradeable") and instance.Head:GetAttribute("Upgradeable") or false
+    self.MaxUpgrade = instance.Head:GetAttribute("MaxUpgrade")
     self.Cost = instance.Head:GetAttribute("ItemCost")
     self.Item = instance.Head:GetAttribute("ItemUnlock")
     self.TouchConnection = self.Instance.Touched:Connect(function(hit)
@@ -106,24 +107,28 @@ function Button:UpdateButtonForUpgrade()
     local upgradeInfo = PLOT_UPGRADES[self.Item]
     local buttonModel = self.Instance.Parent
 
-    if upgradeInfo then
-        local plotOrder = { "Plot_Small", "Plot_Medium", "Plot_Large", "Plot_ExtraLarge" }
-        local currentIndex = table.find(plotOrder, self.Item)
+    if not upgradeInfo then return end
 
-        if currentIndex then
-            self.Cost = currentIndex * 75 + (2 * self.Cost)
-        end
+    local plotOrder = { "Plot_Small", "Plot_Medium", "Plot_Large", "Plot_ExtraLarge" }
+    local currentIndex = table.find(plotOrder, self.Item)
 
-        self.Item = upgradeInfo.next
-        self.Instance:SetAttribute("ItemUnlock", self.Item)
-        self.Instance:SetAttribute("Cost", self.Cost)
+    if currentIndex then
+        self.Cost = currentIndex * 75 + (2 * self.Cost)
+    end
 
-        self:UpdateButtonLabel(buttonModel, upgradeInfo.label, self.Cost)
+    self.Item = upgradeInfo.next
+    self.Instance:SetAttribute("ItemUnlock", self.Item)
+    self.Instance:SetAttribute("Cost", self.Cost)
 
-        local tweenInfo = TweenInfo.new(1.5, Enum.EasingStyle.Bounce)
-        local changeColor = TweenService:Create(self.Instance, tweenInfo, { Color = upgradeInfo.color })
+    self:UpdateButtonLabel(buttonModel, upgradeInfo.label, self.Cost)
 
-        changeColor:Play()
+    local tweenInfo = TweenInfo.new(1.5, Enum.EasingStyle.Bounce)
+    local changeColor = TweenService:Create(self.Instance, tweenInfo, { Color = upgradeInfo.color })
+
+    changeColor:Play()
+
+    if currentIndex == self.Instance:GetAttribute("MaxUpgrade") then
+        self:Destroy()
     end
 end
 
