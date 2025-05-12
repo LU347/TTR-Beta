@@ -76,6 +76,7 @@ function onPlayerRemoving(player)
 
         if not success then
             warn("Failed to save tycoon data for " .. player.Name .. ": " .. err)
+
         end
 
         -- Clean up tycoon instance
@@ -116,7 +117,7 @@ function setPlayerData(player, key, value)
     if playerData then
         ServerTycoons[player.UserId] = playerData
     else
-        warn("Failed to fetch data for " ... player.Name)
+        warn("Failed to fetch data for " .. player.Name)
     end
 end
 

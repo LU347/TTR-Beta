@@ -132,7 +132,7 @@ function getPlayerTycoon(player)
         return PlayerTycoons[player.UserId]
     end
 
-    warn("Player data for " ... player.Name ... " was not found")
+    warn("Player data for " .. player.Name .. " was not found")
 
     return nil
 end
@@ -142,7 +142,7 @@ function setPlayerTycoon(player, key, value)
         PlayerTycoons[player.UserId][key] = value
     end
    
-    warn("Failed to update data for " ... player.Name)
+    warn("Failed to update data for " .. player.Name)
 end
 
 PlantSeed.OnServerEvent:Connect(function(player, fieldInstance, seed)
