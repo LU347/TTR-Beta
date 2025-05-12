@@ -17,17 +17,18 @@ local templateItemsFolder = TemplatePlot.Items
 local templatePlotsFolder = TemplatePlot.Plots
 local templateButtonsFolder = TemplatePlot.Buttons
 
-local ServerTycoons = {}
+--Contains non-serialized data (plot, field, and teapot instances)
+local PlayerTycoons = {}
 
 function Tycoon.new(player, tycoonInstance, unlocked)
     local self = setmetatable({}, Tycoon)
     self.Owner = player
-    self.Unlocked = {}                   --Saved
+    self.Unlocked = unlocked or {}                   --Saved
     self.Plots = {}                      --Saved
     self.Instance = tycoonInstance       --Not Saved
     self.Buttons = {}                    --Not Saved
 
-    ServerTycoons[player.UserId] = self
+    PlayerTycoons[player.UserId] = self
 
     return self
 end
@@ -115,8 +116,8 @@ end
 
 local function getFieldTable(player, fieldName)
     --Finds the plot table and returns the field table that matches the fieldInstance
-    if ServerTycoons[player.UserId] then
-        local plots = ServerTycoons[player.UserId].Plots
+    if PlayerTycoons[player.UserId] then
+        local plots = PlayerTycoons[player.UserId].Plots
         local plotLocation = "Plot" .. string.upper(string.sub(fieldName, 1,1))
         
         if plots[plotLocation] then
@@ -124,6 +125,24 @@ local function getFieldTable(player, fieldName)
             return f[fieldName]
         end
     end
+end
+
+function getPlayerTycoon(player)
+    if PlayerTycoons[player.UserId] then
+        return PlayerTycoons[player.UserId]
+    end
+
+    warn("Player data for " ... player.Name ... " was not found")
+
+    return nil
+end
+
+function setPlayerTycoon(player, key, value)
+    if PlayerTycoons[player.UserId] then
+        PlayerTycoons[player.UserId][key] = value
+    end
+   
+    warn("Failed to update data for " ... player.Name)
 end
 
 PlantSeed.OnServerEvent:Connect(function(player, fieldInstance, seed)
