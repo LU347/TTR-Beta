@@ -18,7 +18,7 @@ local templatePlotsFolder = TemplatePlot.Plots
 local templateButtonsFolder = TemplatePlot.Buttons
 
 --Contains non-serialized data (plot, field, and teapot instances)
-local PlayerTycoons = {}
+PlayerTycoons = {}
 
 function Tycoon.new(player, tycoonInstance, unlocked)
     local self = setmetatable({}, Tycoon)
@@ -104,6 +104,30 @@ function Tycoon:CloneItem(item)
     end
     
     itemClone.Parent = self.Instance.Items
+end
+
+function Tycoon.GetSerializedData(player)
+    if not PlayerTycoons[player.UserId] then return nil end
+    local playerTycoon = PlayerTycoons[player.UserId]
+    
+    --Should have the fields and teapot tables
+    local serializedPlots = {}
+    
+    for plotName, plotTable in pairs(playerTycoon.Plots) do
+        if not playerTycoon.Plots[plotName] then continue end
+        
+        serializedPlots[plotName] = playerTycoon.Plots[plotName]:GetSerializedData()
+    end
+
+    local serializedTable = {
+        Unlocked = playerTycoon.Unlocked,
+        Plots = serializedPlots,
+        Cash = player:GetAttribute("Cash")
+    }
+
+    print(serializedTable)
+
+    return serializedTable
 end
 
 function Tycoon:CleanUp()

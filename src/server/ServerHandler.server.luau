@@ -22,7 +22,7 @@ function CreateTycoon(player)
             plot:SetAttribute("Owner", player.UserId)
             
             --TODO: Get player save data and load items
-            local playerTycoon = Tycoon.new(player, plot, "")
+            local playerTycoon = Tycoon.new(player, plot, nil)
             playerTycoon:Init()
             return playerTycoon
         end
@@ -57,21 +57,19 @@ function onPlayerAdded(player)
             player:LoadCharacter()
         end)
     end)
+    
     player:LoadCharacter()
 end
 
 function onPlayerRemoving(player)
-    local playerTycoon = ServerTycoons[player.UserId]
+    local playerTycoon = Tycoon.GetSerializedData(player)
     if playerTycoon then
-        -- Save player data (example: save to DataStore or custom system)
-        local dataToSave = {
-            Unlocked = playerTycoon.Unlocked,
-            Plots = playerTycoon.Plots
-        }
+        --This is returning nil for some reason
+        print(playerTycoon)
 
         --Save data
         local success, err = pcall(function()
-            SavePlayerTycoonData(player.UserId, dataToSave)
+            --SavePlayerTycoonData(player.UserId, playerTycoon)
         end)
 
         if not success then
@@ -80,7 +78,7 @@ function onPlayerRemoving(player)
         end
 
         -- Clean up tycoon instance
-        playerTycoon:CleanUp()
+        --playerTycoon:CleanUp()
 
         -- Remove reference from the tycoon table
         ServerTycoons[player.UserId] = nil
@@ -94,6 +92,7 @@ TODO:
 data must be a table containing only serializable values (strings, numbers, booleans, tables). No Instances, Vector3s, etc.
 
 Use tostring(userId) as the key to ensure consistency in SetAsync/GetAsync.
+Save everything except connection and instance
 ]]--
 function SavePlayerTycoonData(userId, data)
     -- Convert to JSON-safe format if necessary
@@ -119,6 +118,19 @@ function setPlayerData(player, key, value)
     else
         warn("Failed to fetch data for " .. player.Name)
     end
+end
+
+--Should only return serializable values
+function parsePlayerData(player)
+    local playerData = Tycoon.getPlayerData(player)
+
+    if not playerData then return end
+
+    local dataToSave = {
+        Unlocked = playerTycoon.Unlocked,
+        Plots = playerTycoon.Plots
+    }
+
 end
 
 Players.PlayerAdded:Connect(onPlayerAdded)

@@ -42,19 +42,14 @@ function Plot:Init()
     end
 end
 
---TODO: Replace Instance that stores the current value and tween it a different way
---Get rid of that nested loop
-
 local function findFirstChildWithTag(parent, tag)
-    if parent then
-        for _, child in ipairs(parent:GetChildren()) do
-            if child:HasTag(tag) then
-                return child
-            end
+    if not parent then return nil end
+
+    for _, child in ipairs(parent:GetChildren()) do
+        if child:HasTag(tag) then
+            return child
         end
     end
-
-    return nil
 end
 
 function Plot:Upgrade(newPlotName)
@@ -113,7 +108,23 @@ function Plot:Clean()
     if self.PlotInstance then
         self.PlotInstance:Destroy()
     end
+    
     self = {}
+end
+
+--TODO:
+--Iterate through the plot, field, and teapot tables to retrieve
+---Serializable data
+function Plot:GetSerializedData()
+    local saveData = {}
+
+    --should return the object table without instance(s) and connection(s)
+    for fieldName, fieldTable in pairs(self.Fields) do
+        if not self.Fields[fieldName] then continue end
+        saveData[fieldName] = self.Fields[fieldName]:GetSerializedData()
+    end
+
+    return saveData
 end
 
 return Plot

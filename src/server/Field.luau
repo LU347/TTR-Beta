@@ -18,9 +18,10 @@ function Field.new(owner, instance, type)
     local self = setmetatable({}, Field)
     self.Owner = owner
     self.Instance = instance
-    self.Type = type
-    self.Teapot = {}
-    self.IsTaken = false
+    self.Type = type --saved
+    self.Teapot = {} --saved
+    self.IsTaken = false --saved
+    self.IsWatered = false --saved
     self:Init()
     return self
 end
@@ -91,6 +92,7 @@ function Field:Water()
 
     if not isWatered then
         self.Instance:SetAttribute("Watered", true)
+        self.IsWatered = true
     end
 end
 
@@ -102,14 +104,17 @@ function Field:Harvest()
     self.Owner:SetAttribute("Cash", playerCash + self.Teapot[1].CurrentValue)
 
     --Debug Output
+    --[[
     print("Field Table")
     print(self)
     print("Teapot Table")
     print(self.Teapot)
     print("Teapot[1]")
     print(self.Teapot[1])
+    ]]--
 
     self.IsTaken = false
+    self.IsWatered = false
 
     --Deletes Teapot Instance and Clears Teapot Table--
     local teapotInstance = self.Teapot[1].Instance
@@ -132,6 +137,20 @@ function Field:GetTeapotInstance()
     end
 
     return nil
+end
+
+function Field:GetSerializedData()
+    if not self.Teapot[1] then return end
+    
+    local teapotData = self.Teapot[1]:GetSerializedData()
+    local serializableData = {
+        Type = self.Type,
+        Teapot = teapotData,
+        IsTaken = self.IsTaken,
+        IsWatered = self.IsWatered
+    }
+
+    return serializableData
 end
 
 return Field
