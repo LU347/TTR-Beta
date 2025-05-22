@@ -16,13 +16,17 @@ Field.__index = Field
 
 function Field.new(owner, instance, type)
     local self = setmetatable({}, Field)
+
     self.Owner = owner
     self.Instance = instance
     self.Type = type --saved
     self.Teapot = {} --saved
     self.IsTaken = false --saved
     self.IsWatered = false --saved
+    self.Connection = nil
+
     self:Init()
+
     return self
 end
 
@@ -33,11 +37,13 @@ local function tweenFieldColor(field, newColor)
         tweenInfo,
         { Color = newColor }
     )
+
     tween:Play()
 end
 
 function Field:Init()
     CollectionService:AddTag(self.Instance, "Field")
+
     self.Instance:SetAttribute("Owner", self.Owner.UserId)
     self.Instance:SetAttribute("Type", self.Type)
     self.Instance:SetAttribute("Taken", false)
@@ -46,13 +52,18 @@ function Field:Init()
     self.Connection = self.Instance:GetAttributeChangedSignal("Watered"):Connect(function()
         if self.Instance:GetAttribute("Watered") then
             self:PlaySound("Water")
+
             tweenFieldColor(self.Instance, WET_COLOR)
 
             if #self.Teapot == 1 then
                 self.Teapot[1]:Grow()
             end
+
+            self.IsWatered = true
         else
             tweenFieldColor(self.Instance, DRY_COLOR)
+
+            self.IsWatered = false
         end
     end)
 end
@@ -75,10 +86,12 @@ function Field:Plant(seed)
     end
 
     self:PlaySound("Plant")
+
     self.IsTaken = true
     self.Instance:SetAttribute("Taken", true)
         
     local teapot = Teapot.new(self.Owner, seed, self.Instance)
+    
     table.insert(self.Teapot, teapot)
     
     --This should be in the getattributechanged func
@@ -92,7 +105,6 @@ function Field:Water()
 
     if not isWatered then
         self.Instance:SetAttribute("Watered", true)
-        self.IsWatered = true
     end
 end
 
@@ -103,24 +115,16 @@ function Field:Harvest()
     local playerCash = self.Owner:GetAttribute("Cash")
     self.Owner:SetAttribute("Cash", playerCash + self.Teapot[1].CurrentValue)
 
-    --Debug Output
-    --[[
-    print("Field Table")
-    print(self)
-    print("Teapot Table")
-    print(self.Teapot)
-    print("Teapot[1]")
-    print(self.Teapot[1])
-    ]]--
-
     self.IsTaken = false
-    self.IsWatered = false
 
     --Deletes Teapot Instance and Clears Teapot Table--
     local teapotInstance = self.Teapot[1].Instance
+
     CollectionService:RemoveTag(teapotInstance, "Teapot")
 
     teapotInstance:Destroy()
+
+    self.Teapot[1]:CleanUp()
 
     self.Teapot = {}
     self.Instance:SetAttribute("Watered", false)
@@ -140,9 +144,10 @@ function Field:GetTeapotInstance()
 end
 
 function Field:GetSerializedData()
-    if not self.Teapot[1] then return end
-    
+    if not self.Teapot[1] then return {} end
+
     local teapotData = self.Teapot[1]:GetSerializedData()
+
     local serializableData = {
         Type = self.Type,
         Teapot = teapotData,
@@ -151,6 +156,17 @@ function Field:GetSerializedData()
     }
 
     return serializableData
+end
+
+function Field:CleanUp()
+    if self.Teapot[1] then self.Teapot[1]:CleanUp() end
+
+    self.Connection:Disconnect()
+    self.Connection = nil
+
+    self.Instance:Destroy()
+
+    self = nil
 end
 
 return Field

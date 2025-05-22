@@ -18,7 +18,7 @@ local templatePlotsFolder = TemplatePlot.Plots
 local templateButtonsFolder = TemplatePlot.Buttons
 
 --Contains non-serialized data (plot, field, and teapot instances)
-PlayerTycoons = {}
+Tycoon.PlayerTycoons = {}
 
 function Tycoon.new(player, tycoonInstance, unlocked)
     local self = setmetatable({}, Tycoon)
@@ -28,7 +28,7 @@ function Tycoon.new(player, tycoonInstance, unlocked)
     self.Instance = tycoonInstance       --Not Saved
     self.Buttons = {}                    --Not Saved
 
-    PlayerTycoons[player.UserId] = self
+    --Tycoon.PlayerTycoons[player.UserId] = self
 
     return self
 end
@@ -107,8 +107,8 @@ function Tycoon:CloneItem(item)
 end
 
 function Tycoon.GetSerializedData(player)
-    if not PlayerTycoons[player.UserId] then return nil end
-    local playerTycoon = PlayerTycoons[player.UserId]
+    if not Tycoon.PlayerTycoons[player.UserId] then return nil end
+    local playerTycoon = Tycoon.PlayerTycoons[player.UserId]
     
     --Should have the fields and teapot tables
     local serializedPlots = {}
@@ -135,13 +135,18 @@ function Tycoon:CleanUp()
     self.Instance:SetAttribute("Owner", nil)
     self.Instance.Buttons:Destroy()
     self.Instance.Items:Destroy()
+
+    for plotName, plotTable in pairs(self.Plots) do
+        self.Plots[plotName]:CleanUp()
+    end
+
     self = nil
 end
 
 local function getFieldTable(player, fieldName)
     --Finds the plot table and returns the field table that matches the fieldInstance
-    if PlayerTycoons[player.UserId] then
-        local plots = PlayerTycoons[player.UserId].Plots
+    if Tycoon.PlayerTycoons[player.UserId] then
+        local plots = Tycoon.PlayerTycoons[player.UserId].Plots
         local plotLocation = "Plot" .. string.upper(string.sub(fieldName, 1,1))
         
         if plots[plotLocation] then
@@ -152,8 +157,8 @@ local function getFieldTable(player, fieldName)
 end
 
 function getPlayerTycoon(player)
-    if PlayerTycoons[player.UserId] then
-        return PlayerTycoons[player.UserId]
+    if Tycoon.PlayerTycoons[player.UserId] then
+        return Tycoon.PlayerTycoons[player.UserId]
     end
 
     warn("Player data for " .. player.Name .. " was not found")
@@ -162,8 +167,8 @@ function getPlayerTycoon(player)
 end
 
 function setPlayerTycoon(player, key, value)
-    if PlayerTycoons[player.UserId] then
-        PlayerTycoons[player.UserId][key] = value
+    if Tycoon.PlayerTycoons[player.UserId] then
+        Tycoon.PlayerTycoons[player.UserId][key] = value
     end
    
     warn("Failed to update data for " .. player.Name)

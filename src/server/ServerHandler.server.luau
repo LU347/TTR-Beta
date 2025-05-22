@@ -13,8 +13,6 @@ local Tycoon = require(ReplicatedStorage.Shared.Tycoon)
 local PlotsFolder = game.Workspace.Plots
 local SpawnTag = "PlayerSpawn"
 
-local ServerTycoons = {}
-
 function CreateTycoon(player)
     for _, plot in PlotsFolder:GetChildren() do
         if not plot:GetAttribute("Taken") then
@@ -24,6 +22,7 @@ function CreateTycoon(player)
             --TODO: Get player save data and load items
             local playerTycoon = Tycoon.new(player, plot, nil)
             playerTycoon:Init()
+
             return playerTycoon
         end
     end
@@ -38,7 +37,7 @@ function onPlayerAdded(player)
     end
 
     local playerTycoon = CreateTycoon(player)
-    ServerTycoons[player.UserId] = playerTycoon
+    Tycoon.PlayerTycoons[player.UserId] = playerTycoon
 
     player.CharacterAdded:Connect(function(char) 
         if char then
@@ -78,10 +77,10 @@ function onPlayerRemoving(player)
         end
 
         -- Clean up tycoon instance
-        --playerTycoon:CleanUp()
+        Tycoon.PlayerTycoons[player.UserId]:CleanUp()
 
         -- Remove reference from the tycoon table
-        ServerTycoons[player.UserId] = nil
+        Tycoon.PlayerTycoons[player.UserId] = nil
     end
 end
 
@@ -114,7 +113,7 @@ end
 function setPlayerData(player, key, value)
     local playerData = Tycoon.getPlayerData(player)
     if playerData then
-        ServerTycoons[player.UserId] = playerData
+        Tycoon.PlayerTycoons[player.UserId] = playerData
     else
         warn("Failed to fetch data for " .. player.Name)
     end

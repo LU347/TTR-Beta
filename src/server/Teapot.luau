@@ -101,8 +101,16 @@ function Teapot:GetSerializedData()
         CurrentSize = self.CurrentSize,
         CurrentValue = self.CurrentValue
     }
-    
+
     return serializableData
+end
+
+function Teapot:CleanUp()
+    if self.Instance then
+        self.Instance:Destroy()
+    end
+    
+    self = nil
 end
 
 return Teapot

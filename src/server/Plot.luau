@@ -12,6 +12,7 @@ function Plot.new(player, location, tycoonInstance, type)
     self.Tycoon = tycoonInstance
     self.Type = type
     self.Fields = {}
+
     self:Init()
 
     return self
@@ -104,9 +105,14 @@ function Plot:Upgrade(newPlotName)
     return true
 end
 
-function Plot:Clean()
+function Plot:CleanUp()
     if self.PlotInstance then
         self.PlotInstance:Destroy()
+    end
+
+    for fieldName, fieldTable in pairs(self.Fields) do
+        self.Fields[fieldName]:CleanUp()
+        print("Cleaned")
     end
     
     self = {}
