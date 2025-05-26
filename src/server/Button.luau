@@ -66,7 +66,6 @@ function Button:OnTouch(hit)
     resetDebounce()
 end
 
-
 function Button:UnlockItem()
     if self.Upgradeable then
         --Plots are the only items that can be upgraded for now
@@ -127,7 +126,7 @@ function Button:UpdateButtonForUpgrade()
 
     changeColor:Play()
 
-    if currentIndex == self.Instance:GetAttribute("MaxUpgrade") then
+    if currentIndex >= self.Instance:GetAttribute("MaxUpgrade") then
         self:Destroy()
     end
 end

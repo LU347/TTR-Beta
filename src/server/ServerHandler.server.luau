@@ -4,25 +4,37 @@
 ]]
 
 local CollectionService = game:GetService("CollectionService")
+local DataStoreService = game:GetService("DataStoreService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
+local TycoonDataStore = DataStoreService:GetDataStore("TycoonData")
 local Tycoon = require(ReplicatedStorage.Shared.Tycoon)
 
 local PlotsFolder = game.Workspace.Plots
 local SpawnTag = "PlayerSpawn"
 
-local playerTycoons = {}
+function LoadPlayerTycoonData(userId)
+    local success, playerData = pcall(function()
+        return TycoonDataStore:GetAsync(tostring(userId))
+    end)
 
-function CreateTycoon(player)
+    if success then
+        return playerData
+    end
+end
+
+function CreateTycoon(player, unlocked)
+    unlocked = unlocked or nil 
+
     for _, plot in PlotsFolder:GetChildren() do
         if not plot:GetAttribute("Taken") then
             plot:SetAttribute("Taken", true)
             plot:SetAttribute("Owner", player.UserId)
             
             --TODO: Get player save data and load items
-            local playerTycoon = Tycoon.new(player, plot, "")
+            local playerTycoon = Tycoon.new(player, plot, unlocked)
             playerTycoon:Init()
+
             return playerTycoon
         end
     end
@@ -30,14 +42,16 @@ end
 
 function onPlayerAdded(player)
     --Initialize Player Stats and Spawn them in their tycoon
-    if player.Name == "Soccerplayer25"  or player.Name == "KaretaHana5734" then
+    if player.Name == "lucile" or player.Name == "KaretaHana5734" then
         player:SetAttribute("Cash", 1000000)
     else
         player:SetAttribute("Cash", 0)
     end
 
-    local playerTycoon = CreateTycoon(player)
-    playerTycoons[player.UserId] = playerTycoon
+    local playerData = LoadPlayerTycoonData(player.UserId)
+
+    local playerTycoon = CreateTycoon(player, playerData["Unlocked"])
+    Tycoon.PlayerTycoons[player.UserId] = playerTycoon
 
     player.CharacterAdded:Connect(function(char) 
         if char then
@@ -56,15 +70,48 @@ function onPlayerAdded(player)
             player:LoadCharacter()
         end)
     end)
+    
     player:LoadCharacter()
 end
 
 function onPlayerRemoving(player)
-    if playerTycoons[player.UserId] then
-        --TODO: Save player data
-        local playerTycoon = playerTycoons[player.UserId]
-        playerTycoon:CleanUp()
+    local playerSaveData = Tycoon.GetSerializedData(player)
+    if playerSaveData then
+
+        --Save data
+        local success, err = pcall(function()
+            print(playerSaveData)
+            SavePlayerTycoonData(player.UserId, playerSaveData)
+        end)
+
+        if not success then
+            warn("Failed to save tycoon data for " .. player.Name .. ": " .. err)
+        end
+
+        -- Clean up tycoon instance
+        Tycoon.PlayerTycoons[player.UserId]:CleanUp()
+
+        -- Remove reference from the tycoon table
+        Tycoon.PlayerTycoons[player.UserId] = nil
     end
+end
+
+function SavePlayerTycoonData(userId, data)
+    -- Convert to JSON-safe format if necessary
+    -- (e.g., avoid instances or userdata inside `data`)
+    
+    local success, result = pcall(function()
+        TycoonDataStore:SetAsync(tostring(userId), data)
+    end)
+
+    if not success then
+        warn("Failed to save data for userId " .. userId .. ": " .. result)
+        return false
+    end
+
+    print("Save success!")
+
+    return true
 end
 
 Players.PlayerAdded:Connect(onPlayerAdded)

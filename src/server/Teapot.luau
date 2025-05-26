@@ -18,7 +18,7 @@ function Teapot.new(owner, name, fieldInstance)
     local self = setmetatable({}, Teapot)
     self.Owner = owner
     self.Name = name    --Saved
-    self.FieldInstance = fieldInstance --Saved
+    self.FieldInstance = fieldInstance
     self.CurrentSize = 0 --Saved
     self.CurrentValue = 0 --Saved
     self.MaxSize = TeapotData[self.Name].MaxSize
@@ -93,6 +93,30 @@ function Teapot:Grow()
     else
         print("value instance does not exist")
     end
+end
+
+function Teapot:GetSerializedData()
+    local currentSize = {
+        X = self.Instance.CFrame.X,
+        Y = self.Instance.CFrame.Y,
+        Z = self.Instance.CFrame.Z
+    }
+
+    local serializableData = {
+        Name = self.Name,
+        CurrentSize = currentSize,
+        CurrentValue = self.CurrentValue
+    }
+
+    return serializableData
+end
+
+function Teapot:CleanUp()
+    if self.Instance then
+        self.Instance:Destroy()
+    end
+    
+    self = nil
 end
 
 return Teapot

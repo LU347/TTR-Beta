@@ -12,6 +12,7 @@ function Plot.new(player, location, tycoonInstance, type)
     self.Tycoon = tycoonInstance
     self.Type = type
     self.Fields = {}
+
     self:Init()
 
     return self
@@ -42,19 +43,14 @@ function Plot:Init()
     end
 end
 
---TODO: Replace Instance that stores the current value and tween it a different way
---Get rid of that nested loop
-
 local function findFirstChildWithTag(parent, tag)
-    if parent then
-        for _, child in ipairs(parent:GetChildren()) do
-            if child:HasTag(tag) then
-                return child
-            end
+    if not parent then return nil end
+
+    for _, child in ipairs(parent:GetChildren()) do
+        if child:HasTag(tag) then
+            return child
         end
     end
-
-    return nil
 end
 
 function Plot:Upgrade(newPlotName)
@@ -109,11 +105,31 @@ function Plot:Upgrade(newPlotName)
     return true
 end
 
-function Plot:Clean()
+function Plot:CleanUp()
     if self.PlotInstance then
         self.PlotInstance:Destroy()
     end
+
+    for fieldName, fieldTable in pairs(self.Fields) do
+        self.Fields[fieldName]:CleanUp()
+        print("Cleaned")
+    end
+    
     self = {}
+end
+
+--TODO:
+--Iterate through the plot, field, and teapot tables to retrieve
+---Serializable data
+function Plot:GetSerializedData()
+    local saveData = {}
+
+    --should return the object table without instance(s) and connection(s)
+    for fieldName, fieldTable in pairs(self.Fields) do
+        saveData[fieldName] = self.Fields[fieldName]:GetSerializedData()
+    end
+
+    return saveData
 end
 
 return Plot

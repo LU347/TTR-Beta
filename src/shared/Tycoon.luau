@@ -17,17 +17,16 @@ local templateItemsFolder = TemplatePlot.Items
 local templatePlotsFolder = TemplatePlot.Plots
 local templateButtonsFolder = TemplatePlot.Buttons
 
-local ServerTycoons = {}
+--Contains non-serialized data (plot, field, and teapot instances)
+Tycoon.PlayerTycoons = {}
 
 function Tycoon.new(player, tycoonInstance, unlocked)
     local self = setmetatable({}, Tycoon)
     self.Owner = player
-    self.Unlocked = {}                   --Saved
+    self.Unlocked = unlocked or {}                   --Saved
     self.Plots = {}                      --Saved
     self.Instance = tycoonInstance       --Not Saved
     self.Buttons = {}                    --Not Saved
-
-    ServerTycoons[player.UserId] = self
 
     return self
 end
@@ -45,6 +44,11 @@ function Tycoon:Init()
     plotsFolder.Name = "Plots"
     plotsFolder.Parent = self.Instance
 
+    --Traverse through unlocked items
+    for _, unlockedItem in self.Unlocked do
+        self:CloneItem(unlockedItem)
+    end
+
     --Initialize Plot Locations--
     local tycoonPlots = templatePlotsFolder:Clone()
 
@@ -58,6 +62,11 @@ function Tycoon:Init()
     local tycoonButtons = templateButtonsFolder:Clone()
 
     for _, button in tycoonButtons:GetChildren() do
+        local item = button.Head:GetAttribute("ItemUnlock")
+        if table.find(self.Unlocked, item) then
+            continue
+        end
+
         self:CloneModel(button)
         button.Parent = buttonsFolder
 
@@ -105,18 +114,47 @@ function Tycoon:CloneItem(item)
     itemClone.Parent = self.Instance.Items
 end
 
+function Tycoon.GetSerializedData(player)
+    if not Tycoon.PlayerTycoons[player.UserId] then return nil end
+    local playerTycoon = Tycoon.PlayerTycoons[player.UserId]
+    
+    --Should have the fields and teapot tables
+    local serializedPlots = {}
+    
+    for plotName, plotTable in pairs(playerTycoon.Plots) do
+        if not playerTycoon.Plots[plotName] then continue end
+        
+        serializedPlots[plotName] = playerTycoon.Plots[plotName]:GetSerializedData()
+    end
+
+    local serializedTable = {
+        Unlocked = playerTycoon.Unlocked,
+        Plots = serializedPlots,
+        Cash = player:GetAttribute("Cash")
+    }
+
+    print(serializedTable)
+
+    return serializedTable
+end
+
 function Tycoon:CleanUp()
     self.Instance:SetAttribute("Taken", false)
     self.Instance:SetAttribute("Owner", nil)
     self.Instance.Buttons:Destroy()
     self.Instance.Items:Destroy()
+
+    for plotName, plotTable in pairs(self.Plots) do
+        self.Plots[plotName]:CleanUp()
+    end
+
     self = nil
 end
 
 local function getFieldTable(player, fieldName)
     --Finds the plot table and returns the field table that matches the fieldInstance
-    if ServerTycoons[player.UserId] then
-        local plots = ServerTycoons[player.UserId].Plots
+    if Tycoon.PlayerTycoons[player.UserId] then
+        local plots = Tycoon.PlayerTycoons[player.UserId].Plots
         local plotLocation = "Plot" .. string.upper(string.sub(fieldName, 1,1))
         
         if plots[plotLocation] then
@@ -124,6 +162,24 @@ local function getFieldTable(player, fieldName)
             return f[fieldName]
         end
     end
+end
+
+function getPlayerTycoon(player)
+    if Tycoon.PlayerTycoons[player.UserId] then
+        return Tycoon.PlayerTycoons[player.UserId]
+    end
+
+    warn("Player data for " .. player.Name .. " was not found")
+
+    return nil
+end
+
+function setPlayerTycoon(player, key, value)
+    if Tycoon.PlayerTycoons[player.UserId] then
+        Tycoon.PlayerTycoons[player.UserId][key] = value
+    end
+   
+    warn("Failed to update data for " .. player.Name)
 end
 
 PlantSeed.OnServerEvent:Connect(function(player, fieldInstance, seed)
