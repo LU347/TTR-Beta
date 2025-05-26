@@ -13,14 +13,26 @@ local Tycoon = require(ReplicatedStorage.Shared.Tycoon)
 local PlotsFolder = game.Workspace.Plots
 local SpawnTag = "PlayerSpawn"
 
-function CreateTycoon(player)
+function LoadPlayerTycoonData(userId)
+    local success, playerData = pcall(function()
+        return TycoonDataStore:GetAsync(tostring(userId))
+    end)
+
+    if success then
+        return playerData
+    end
+end
+
+function CreateTycoon(player, unlocked)
+    unlocked = unlocked or nil 
+
     for _, plot in PlotsFolder:GetChildren() do
         if not plot:GetAttribute("Taken") then
             plot:SetAttribute("Taken", true)
             plot:SetAttribute("Owner", player.UserId)
             
             --TODO: Get player save data and load items
-            local playerTycoon = Tycoon.new(player, plot, nil)
+            local playerTycoon = Tycoon.new(player, plot, unlocked)
             playerTycoon:Init()
 
             return playerTycoon
@@ -36,7 +48,9 @@ function onPlayerAdded(player)
         player:SetAttribute("Cash", 0)
     end
 
-    local playerTycoon = CreateTycoon(player)
+    local playerData = LoadPlayerTycoonData(player.UserId)
+
+    local playerTycoon = CreateTycoon(player, playerData["Unlocked"])
     Tycoon.PlayerTycoons[player.UserId] = playerTycoon
 
     player.CharacterAdded:Connect(function(char) 
@@ -61,19 +75,17 @@ function onPlayerAdded(player)
 end
 
 function onPlayerRemoving(player)
-    local playerTycoon = Tycoon.GetSerializedData(player)
-    if playerTycoon then
-        --This is returning nil for some reason
-        print(playerTycoon)
+    local playerSaveData = Tycoon.GetSerializedData(player)
+    if playerSaveData then
 
         --Save data
         local success, err = pcall(function()
-            --SavePlayerTycoonData(player.UserId, playerTycoon)
+            print(playerSaveData)
+            SavePlayerTycoonData(player.UserId, playerSaveData)
         end)
 
         if not success then
             warn("Failed to save tycoon data for " .. player.Name .. ": " .. err)
-
         end
 
         -- Clean up tycoon instance
@@ -84,15 +96,6 @@ function onPlayerRemoving(player)
     end
 end
 
---[[
-
-TODO:
-⚠️ Important Tips:
-data must be a table containing only serializable values (strings, numbers, booleans, tables). No Instances, Vector3s, etc.
-
-Use tostring(userId) as the key to ensure consistency in SetAsync/GetAsync.
-Save everything except connection and instance
-]]--
 function SavePlayerTycoonData(userId, data)
     -- Convert to JSON-safe format if necessary
     -- (e.g., avoid instances or userdata inside `data`)
@@ -106,30 +109,9 @@ function SavePlayerTycoonData(userId, data)
         return false
     end
 
+    print("Save success!")
+
     return true
-end
-
---Retrieves player tycoon data from the Tycoon module
-function setPlayerData(player, key, value)
-    local playerData = Tycoon.getPlayerData(player)
-    if playerData then
-        Tycoon.PlayerTycoons[player.UserId] = playerData
-    else
-        warn("Failed to fetch data for " .. player.Name)
-    end
-end
-
---Should only return serializable values
-function parsePlayerData(player)
-    local playerData = Tycoon.getPlayerData(player)
-
-    if not playerData then return end
-
-    local dataToSave = {
-        Unlocked = playerTycoon.Unlocked,
-        Plots = playerTycoon.Plots
-    }
-
 end
 
 Players.PlayerAdded:Connect(onPlayerAdded)
