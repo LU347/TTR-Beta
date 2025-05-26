@@ -28,8 +28,6 @@ function Tycoon.new(player, tycoonInstance, unlocked)
     self.Instance = tycoonInstance       --Not Saved
     self.Buttons = {}                    --Not Saved
 
-    --Tycoon.PlayerTycoons[player.UserId] = self
-
     return self
 end
 
@@ -46,6 +44,11 @@ function Tycoon:Init()
     plotsFolder.Name = "Plots"
     plotsFolder.Parent = self.Instance
 
+    --Traverse through unlocked items
+    for _, unlockedItem in self.Unlocked do
+        self:CloneItem(unlockedItem)
+    end
+
     --Initialize Plot Locations--
     local tycoonPlots = templatePlotsFolder:Clone()
 
@@ -59,6 +62,11 @@ function Tycoon:Init()
     local tycoonButtons = templateButtonsFolder:Clone()
 
     for _, button in tycoonButtons:GetChildren() do
+        local item = button.Head:GetAttribute("ItemUnlock")
+        if table.find(self.Unlocked, item) then
+            continue
+        end
+
         self:CloneModel(button)
         button.Parent = buttonsFolder
 

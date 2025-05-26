@@ -96,9 +96,15 @@ function Teapot:Grow()
 end
 
 function Teapot:GetSerializedData()
+    local currentSize = {
+        X = self.Instance.CFrame.X,
+        Y = self.Instance.CFrame.Y,
+        Z = self.Instance.CFrame.Z
+    }
+
     local serializableData = {
         Name = self.Name,
-        CurrentSize = self.CurrentSize,
+        CurrentSize = currentSize,
         CurrentValue = self.CurrentValue
     }
 

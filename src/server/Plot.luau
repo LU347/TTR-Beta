@@ -126,7 +126,6 @@ function Plot:GetSerializedData()
 
     --should return the object table without instance(s) and connection(s)
     for fieldName, fieldTable in pairs(self.Fields) do
-        if not self.Fields[fieldName] then continue end
         saveData[fieldName] = self.Fields[fieldName]:GetSerializedData()
     end
 
