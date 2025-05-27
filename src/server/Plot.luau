@@ -122,14 +122,19 @@ end
 --Iterate through the plot, field, and teapot tables to retrieve
 ---Serializable data
 function Plot:GetSerializedData()
-    local saveData = {}
+    local saveData = {
+        Type = self.Type,
+        Fields = {}
+    }
 
-    --should return the object table without instance(s) and connection(s)
     for fieldName, fieldTable in pairs(self.Fields) do
-        saveData[fieldName] = self.Fields[fieldName]:GetSerializedData()
+        saveData.Fields[fieldName] = fieldTable:GetSerializedData()
+        print(saveData)
     end
 
+    print(saveData)
     return saveData
 end
+
 
 return Plot

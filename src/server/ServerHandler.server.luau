@@ -23,16 +23,17 @@ function LoadPlayerTycoonData(userId)
     end
 end
 
-function CreateTycoon(player, unlocked)
-    unlocked = unlocked or nil 
+function CreateTycoon(player, unlocked, plotData)
+    unlocked = unlocked or nil
+    plotData = plotData or nil
 
-    for _, plot in PlotsFolder:GetChildren() do
-        if not plot:GetAttribute("Taken") then
-            plot:SetAttribute("Taken", true)
-            plot:SetAttribute("Owner", player.UserId)
+    for _, plotBase in PlotsFolder:GetChildren() do
+        if not plotBase:GetAttribute("Taken") then
+            plotBase:SetAttribute("Taken", true)
+            plotBase:SetAttribute("Owner", player.UserId)
             
             --TODO: Get player save data and load items
-            local playerTycoon = Tycoon.new(player, plot, unlocked)
+            local playerTycoon = Tycoon.new(player, plotBase, unlocked)
             playerTycoon:Init()
 
             return playerTycoon
@@ -49,8 +50,15 @@ function onPlayerAdded(player)
     end
 
     local playerData = LoadPlayerTycoonData(player.UserId)
+    local playerTycoon
 
-    local playerTycoon = CreateTycoon(player, playerData["Unlocked"])
+    if playerData then
+        player:SetAttribute("Cash", playerData["Cash"])
+        playerTycoon = CreateTycoon(player, playerData["Unlocked"], playerData["Plots"])
+    else
+        playerTycoon = CreateTycoon(player)
+    end
+
     Tycoon.PlayerTycoons[player.UserId] = playerTycoon
 
     player.CharacterAdded:Connect(function(char) 

@@ -20,11 +20,11 @@ local templateButtonsFolder = TemplatePlot.Buttons
 --Contains non-serialized data (plot, field, and teapot instances)
 Tycoon.PlayerTycoons = {}
 
-function Tycoon.new(player, tycoonInstance, unlocked)
+function Tycoon.new(player, tycoonInstance, unlocked, plotData)
     local self = setmetatable({}, Tycoon)
     self.Owner = player
     self.Unlocked = unlocked or {}                   --Saved
-    self.Plots = {}                      --Saved
+    self.Plots = plotData or {}                      --Saved
     self.Instance = tycoonInstance       --Not Saved
     self.Buttons = {}                    --Not Saved
 
@@ -51,16 +51,17 @@ function Tycoon:Init()
 
     --Initialize Plot Locations--
     local tycoonPlots = templatePlotsFolder:Clone()
-
-    for _, plot in tycoonPlots:GetChildren() do
-        self:ClonePart(plot)
-        plot.Transparency = 1
-        plot.Parent = plotsFolder
+    for _, plotBase in tycoonPlots:GetChildren() do
+        self:ClonePart(plotBase)
+        plotBase.Transparency = 1
+        plotBase.Parent = plotsFolder
     end
+
+    --Initialize unlocked Plots
+
     
     --Buttons from the template tycoon are cloned and transferred onto the player's tycoon--
     local tycoonButtons = templateButtonsFolder:Clone()
-
     for _, button in tycoonButtons:GetChildren() do
         local item = button.Head:GetAttribute("ItemUnlock")
         if table.find(self.Unlocked, item) then
