@@ -14,6 +14,35 @@ local WET_COLOR = Color3.fromRGB(62, 53, 47)
 local Field = {}
 Field.__index = Field
 
+function Field.FromSerializedData(owner, instance, savedData)
+    local self = setmetatable({}, Field)
+
+    self.Owner = owner
+    self.Instance = instance
+    self.Type = savedData.Type
+    self.IsTaken = savedData.IsTaken
+    self.IsWatered = savedData.IsWatered
+    self.Teapot = {}
+    self.Connection = nil
+
+    self:Init()
+
+    if savedData.Teapot then
+        -- Recreate the teapot (assuming Teapot has a similar FromSerializedData method)
+        local teapot = Teapot.FromSerializedData(owner, savedData.Teapot, instance)
+        table.insert(self.Teapot, teapot)
+
+        if self.IsWatered then
+            teapot:Grow() -- optional, if you want to grow it immediately
+        end
+    end
+
+    self.Instance:SetAttribute("Taken", self.IsTaken)
+    self.Instance:SetAttribute("Watered", self.IsWatered)
+
+    return self
+end
+
 function Field.new(owner, instance, type)
     local self = setmetatable({}, Field)
 

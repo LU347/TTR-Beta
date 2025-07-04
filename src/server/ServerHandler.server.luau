@@ -2,13 +2,14 @@
     Handles player join: loading player data, tycoon setup
     Handles player leave: saving player data, tycoon cleanup
 ]]
-
 local CollectionService = game:GetService("CollectionService")
 local DataStoreService = game:GetService("DataStoreService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TycoonDataStore = DataStoreService:GetDataStore("TycoonData")
+
 local Tycoon = require(ReplicatedStorage.Shared.Tycoon)
+
+local TycoonDataStore = DataStoreService:GetDataStore("TycoonData")
 
 local PlotsFolder = game.Workspace.Plots
 local SpawnTag = "PlayerSpawn"
@@ -33,7 +34,7 @@ function CreateTycoon(player, unlocked, plotData)
             plotBase:SetAttribute("Owner", player.UserId)
             
             --TODO: Get player save data and load items
-            local playerTycoon = Tycoon.new(player, plotBase, unlocked)
+            local playerTycoon = Tycoon.new(player, plotBase, unlocked, plotData)
             playerTycoon:Init()
 
             return playerTycoon

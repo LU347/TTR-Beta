@@ -5,16 +5,24 @@ local Field = require(game.ServerScriptService.Server.Field)
 local Plot = {}
 Plot.__index = Plot
 
-function Plot.new(player, location, tycoonInstance, type)
+function Plot.new(player, location, tycoonInstance, plotType, fieldData)
     local self = setmetatable({}, Plot)
     self.Owner = player
     self.Location = location
     self.Tycoon = tycoonInstance
-    self.Type = type
+    self.Type = plotType
     self.Fields = {}
+    self.FieldData = fieldData or nil
 
     self:Init()
 
+    for fieldName, fieldData in pairs(self.FieldData) do
+        local fieldInstance = plotFolder:FindFirstChild(fieldName)
+        if fieldInstance then
+            local field = Field.FromSerializedData(owner, fieldInstance, fieldData)
+            self.Fields[fieldName] = field
+        end
+    end
     return self
 end
 
@@ -38,9 +46,14 @@ function Plot:Init()
     for _, field in plotClone:GetChildren() do
         if field.Name ~= "Base" then
             field.Name = locationSuffix .. field.Name
-            self.Fields[field.Name] = Field.new(self.Owner, field, fieldType)
+
+            local newFieldObject = Field.new(self.Owner, field, fieldType)
+            self.Fields[field.Name] = newFieldObject
         end
     end
+
+    -- Fields are loaded successfully once but if I do not do anything and leave
+    -- it would be overwritten
 end
 
 local function findFirstChildWithTag(parent, tag)
@@ -124,7 +137,7 @@ end
 function Plot:GetSerializedData()
     local saveData = {
         Type = self.Type,
-        Fields = {}
+        Fields = {},
     }
 
     for fieldName, fieldTable in pairs(self.Fields) do

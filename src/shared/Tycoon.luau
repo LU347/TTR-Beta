@@ -2,6 +2,7 @@ local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Button = require(game.ServerScriptService.Server.Button)
+local Plot = require(game.ServerScriptService.Server.Plot)
 
 local PlantSeed = ReplicatedStorage.RemoteEvents.PlantSeed
 local WaterField = ReplicatedStorage.RemoteEvents.WaterField
@@ -19,6 +20,31 @@ local templateButtonsFolder = TemplatePlot.Buttons
 
 --Contains non-serialized data (plot, field, and teapot instances)
 Tycoon.PlayerTycoons = {}
+
+function Tycoon:ApplySavedData(data)
+    if not data then
+        warn("No save data provided to ApplySavedData")
+        return
+    end
+
+    -- Load unlocked items
+    self.Unlocked = data.Unlocked or {}
+
+    -- Turn serialized plot data into Plot objects
+    self.Plots = {}
+    if data.Plots then
+        for plotName, plotTable in pairs(data.Plots) do
+            -- Construct the Plot object now
+            local plot = Plot.new(self.Owner, plotName, self.Instance, plotTable.Type, plotTable.Fields)
+            self.Plots[plotName] = plot
+        end
+    end
+
+    -- Restore player attributes like Cash
+    if data.Cash ~= nil then
+        self.Owner:SetAttribute("Cash", data.Cash)
+    end
+end
 
 function Tycoon.new(player, tycoonInstance, unlocked, plotData)
     local self = setmetatable({}, Tycoon)
@@ -57,9 +83,6 @@ function Tycoon:Init()
         plotBase.Parent = plotsFolder
     end
 
-    --Initialize unlocked Plots
-
-    
     --Buttons from the template tycoon are cloned and transferred onto the player's tycoon--
     local tycoonButtons = templateButtonsFolder:Clone()
     for _, button in tycoonButtons:GetChildren() do
