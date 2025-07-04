@@ -6,8 +6,9 @@ local CollectionService = game:GetService("CollectionService")
 local DataStoreService = game:GetService("DataStoreService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerScriptService = game:GetService("ServerScriptService")
 
-local Tycoon = require(ReplicatedStorage.Shared.Tycoon)
+local Tycoon = require(ServerScriptService.Server.TycoonHandler)
 
 local TycoonDataStore = DataStoreService:GetDataStore("TycoonData")
 
