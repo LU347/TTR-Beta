@@ -1,7 +1,9 @@
 local Players = game:GetService("Players")
-local Plot = require(game.ServerScriptService.Server.Plot)
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
+
+local Plot = require(script.Parent.Plot)
+
 local playSound = ReplicatedStorage.RemoteEvents.PlaySound
 
 local Button = {}

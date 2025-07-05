@@ -1,8 +1,8 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local Button = require(game.ServerScriptService.Server.Button)
-local Plot = require(game.ServerScriptService.Server.Plot)
+local Button = require(script.Parent.Button)
+local Plot = require(script.Parent.Plot)
 
 local PlantSeed = ReplicatedStorage.RemoteEvents.PlantSeed
 local WaterField = ReplicatedStorage.RemoteEvents.WaterField

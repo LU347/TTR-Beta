@@ -1,6 +1,6 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Field = require(game.ServerScriptService.Server.Field)
+local Field = require(script.Parent.Field)
 
 local Plot = {}
 Plot.__index = Plot

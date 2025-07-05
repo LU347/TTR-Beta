@@ -3,9 +3,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local TweenService = game:GetService("TweenService")
 
-local Teapot = require(ServerScriptService.Server.Teapot)
-local TeapotData = require(ServerScriptService.Server.TeapotData)
+local Teapot = require(script.Parent.Teapot)
+local TeapotData = require(script.Parent.TeapotData)
 local Enums = require(ReplicatedStorage.Shared.Enums)
+
 local PlaySoundEvent = ReplicatedStorage.RemoteEvents.PlaySound
 
 local DRY_COLOR = Color3.fromRGB(86,66,54)

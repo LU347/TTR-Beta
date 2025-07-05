@@ -8,7 +8,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 
-local Tycoon = require(ServerScriptService.Server.TycoonHandler)
+local TycoonHandler = require(ServerScriptService.Server.TycoonHandler)
 
 local TycoonDataStore = DataStoreService:GetDataStore("TycoonData")
 
@@ -35,8 +35,9 @@ function CreateTycoon(player, unlocked, plotData)
             plotBase:SetAttribute("Owner", player.UserId)
             
             --TODO: Get player save data and load items
-            local playerTycoon = Tycoon.new(player, plotBase, unlocked, plotData)
-            playerTycoon:Init()
+            local playerTycoon = TycoonHandler.CreateTycoon(player, plotBase)
+            --local playerTycoon = Tycoon.new(player, plotBase, unlocked, plotData)
+            --playerTycoon:Init()
 
             return playerTycoon
         end
@@ -55,12 +56,15 @@ function onPlayerAdded(player)
     local playerTycoon
 
     if playerData then
+        --TycoonHandler.ApplySavedData(player, playerData)
         player:SetAttribute("Cash", playerData["Cash"])
         playerTycoon = CreateTycoon(player, playerData["Unlocked"], playerData["Plots"])
     else
         playerTycoon = CreateTycoon(player)
+        
     end
 
+    
     Tycoon.PlayerTycoons[player.UserId] = playerTycoon
 
     player.CharacterAdded:Connect(function(char) 
