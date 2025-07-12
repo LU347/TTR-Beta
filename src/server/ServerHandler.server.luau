@@ -2,16 +2,20 @@
     Handles player join: loading player data, tycoon setup
     Handles player leave: saving player data, tycoon cleanup
 ]]
-
 local CollectionService = game:GetService("CollectionService")
 local DataStoreService = game:GetService("DataStoreService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TycoonDataStore = DataStoreService:GetDataStore("TycoonData")
-local Tycoon = require(ReplicatedStorage.Shared.Tycoon)
+local ServerScriptService = game:GetService("ServerScriptService")
 
-local PlotsFolder = game.Workspace.Plots
+local TycoonHandler = require(ServerScriptService.Server.TycoonHandler)
+local Tycoon = require(ServerScriptService.Server.TycoonHandler.Tycoon)
+
+local TycoonDataStore = DataStoreService:GetDataStore("TycoonData")
+
 local SpawnTag = "PlayerSpawn"
+
+local STARTING_CASH = 50
 
 function LoadPlayerTycoonData(userId)
     local success, playerData = pcall(function()
@@ -23,35 +27,43 @@ function LoadPlayerTycoonData(userId)
     end
 end
 
-function CreateTycoon(player, unlocked)
-    unlocked = unlocked or nil 
+--[[
+function CreateTycoonInstance(player, unlocked, plotData)
+    unlocked = unlocked or nil
+    plotData = plotData or nil
 
-    for _, plot in PlotsFolder:GetChildren() do
-        if not plot:GetAttribute("Taken") then
-            plot:SetAttribute("Taken", true)
-            plot:SetAttribute("Owner", player.UserId)
+    for _, plotBase in PlotsFolder:GetChildren() do
+        if not plotBase:GetAttribute("Taken") then
+            plotBase:SetAttribute("Taken", true)
+            plotBase:SetAttribute("Owner", player.UserId)
             
             --TODO: Get player save data and load items
-            local playerTycoon = Tycoon.new(player, plot, unlocked)
-            playerTycoon:Init()
-
-            return playerTycoon
+            local playerTycoon = TycoonHandler.CreateTycoon(player, plotBase)
         end
     end
 end
+]]--
 
 function onPlayerAdded(player)
     --Initialize Player Stats and Spawn them in their tycoon
-    if player.Name == "lucile" or player.Name == "KaretaHana5734" then
+    if player.Name == "seydou_x" or player.Name == "KaretaHana5734" then
         player:SetAttribute("Cash", 1000000)
-    else
-        player:SetAttribute("Cash", 0)
     end
 
     local playerData = LoadPlayerTycoonData(player.UserId)
+    local playerTycoon
 
-    local playerTycoon = CreateTycoon(player, playerData["Unlocked"])
-    Tycoon.PlayerTycoons[player.UserId] = playerTycoon
+    if playerData then
+        --TycoonHandler.ApplySavedData(player, playerData)
+        player:SetAttribute("Cash", playerData["Cash"])
+    else
+        player:SetAttribute("Cash", STARTING_CASH)
+    end
+
+    print(playerData)
+
+    playerTycoon = TycoonHandler.createTycoon(player, playerData)
+    --playerTycoon = CreateTycoonInstance(player, playerData)
 
     player.CharacterAdded:Connect(function(char) 
         if char then
@@ -89,10 +101,8 @@ function onPlayerRemoving(player)
         end
 
         -- Clean up tycoon instance
-        Tycoon.PlayerTycoons[player.UserId]:CleanUp()
-
-        -- Remove reference from the tycoon table
-        Tycoon.PlayerTycoons[player.UserId] = nil
+        TycoonHandler.removeTycoon(player)
+        --Tycoon.PlayerTycoons[player.UserId]:CleanUp()
     end
 end
 

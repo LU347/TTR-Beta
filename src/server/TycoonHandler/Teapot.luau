@@ -14,6 +14,60 @@ local function getRandomizedAngle()
     return CFrame.fromEulerAngles(0, angle, 0)
 end
 
+function Teapot.FromSerializedData(owner, savedData, fieldInstance)
+    local self = setmetatable({}, Teapot)
+    
+    self.Owner = owner
+    self.Name = savedData.Name
+    self.FieldInstance = fieldInstance
+    self.CurrentSize = savedData.CurrentSize or 0
+    self.CurrentValue = savedData.CurrentValue or 0
+    self.MaxSize = TeapotData[self.Name].MaxSize
+    self.MaxValue = TeapotData[self.Name].MaxValue
+    self.Type = TeapotData[self.Name].Type
+    self.Instance = nil
+    
+    self:Init()
+    
+    -- Position the teapot at the field instance first
+    local teapotCFrame = CFrame.new(
+        self.FieldInstance.CFrame.X,
+        self.FieldInstance.CFrame.Y + 0.5,
+        self.FieldInstance.CFrame.Z
+    ) * getRandomizedAngle()
+    self.Instance:PivotTo(teapotCFrame)
+    
+    -- Restore the saved size and position
+    if savedData.CurrentSize then
+        -- Convert the saved table back to Vector3
+        local sizeVector = Vector3.new(
+            savedData.CurrentSize.X,
+            savedData.CurrentSize.Y,
+            savedData.CurrentSize.Z
+        )
+        self.Instance.Size = sizeVector
+        self.CurrentSize = sizeVector -- Update the CurrentSize property too
+    end
+    
+    -- Restore the saved Y offset position
+    if savedData.YOffset then
+        local newPosition = Vector3.new(
+            self.FieldInstance.Position.X,
+            self.FieldInstance.Position.Y + savedData.YOffset,
+            self.FieldInstance.Position.Z
+        )
+        self.Instance.Position = newPosition
+    end
+    
+    -- Restore the saved value
+    local currentValue = self.Instance:FindFirstChild("CurrentValue")
+    if currentValue then
+        currentValue.Value = self.CurrentValue
+    end
+    
+    return self
+end
+
 function Teapot.new(owner, name, fieldInstance)
     local self = setmetatable({}, Teapot)
     self.Owner = owner
@@ -95,17 +149,51 @@ function Teapot:Grow()
     end
 end
 
-function Teapot:GetSerializedData()
-    local currentSize = {
-        X = self.Instance.CFrame.X,
-        Y = self.Instance.CFrame.Y,
-        Z = self.Instance.CFrame.Z
-    }
+function Teapot:ApplySavedData(data)
+    if not data then return end
+    
+    -- Apply saved size
+    if data.CurrentSize then
+        -- Convert the saved table back to Vector3
+        local sizeVector = Vector3.new(
+            data.CurrentSize.X,
+            data.CurrentSize.Y,
+            data.CurrentSize.Z
+        )
+        self.Instance.Size = sizeVector
+        self.CurrentSize = sizeVector -- Update the CurrentSize property too
+    end
+    
+    -- Apply saved Y offset position
+    if data.YOffset then
+        local newPosition = Vector3.new(
+            self.FieldInstance.Position.X,
+            self.FieldInstance.Position.Y + data.YOffset,
+            self.FieldInstance.Position.Z
+        )
+        self.Instance.Position = newPosition
+    end
+    
+    -- Apply saved value
+    local currentValue = self.Instance:FindFirstChild("CurrentValue")
+    if currentValue and data.CurrentValue then
+        currentValue.Value = data.CurrentValue
+        self.CurrentValue = data.CurrentValue
+    end
+end
 
+function Teapot:GetSerializedData()
+    -- Save the current size and relative position
     local serializableData = {
         Name = self.Name,
-        CurrentSize = currentSize,
-        CurrentValue = self.CurrentValue
+        CurrentSize = {
+            X = self.Instance.Size.X,
+            Y = self.Instance.Size.Y,
+            Z = self.Instance.Size.Z
+        },
+        CurrentValue = self.CurrentValue,
+        -- Save the relative Y offset from the field
+        YOffset = self.Instance.Position.Y - self.FieldInstance.Position.Y
     }
 
     return serializableData

@@ -3,9 +3,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local TweenService = game:GetService("TweenService")
 
-local Teapot = require(ServerScriptService.Server.Teapot)
-local TeapotData = require(ServerScriptService.Server.TeapotData)
+local Teapot = require(script.Parent.Teapot)
+local TeapotData = require(script.Parent.TeapotData)
 local Enums = require(ReplicatedStorage.Shared.Enums)
+
 local PlaySoundEvent = ReplicatedStorage.RemoteEvents.PlaySound
 
 local DRY_COLOR = Color3.fromRGB(86,66,54)
@@ -13,6 +14,59 @@ local WET_COLOR = Color3.fromRGB(62, 53, 47)
 
 local Field = {}
 Field.__index = Field
+
+function Field.FromSerializedData(owner, instance, savedData)
+    local self = setmetatable({}, Field)
+
+    self.Owner = owner
+    self.Instance = instance
+    self.Type = savedData.Type
+    self.IsTaken = savedData.IsTaken
+    self.IsWatered = savedData.IsWatered
+    self.Teapot = {}
+    self.Connection = nil
+
+    self:Init()
+
+    if savedData.Teapot then
+        -- Recreate the teapot (assuming Teapot has a similar FromSerializedData method)
+        local teapot = Teapot.FromSerializedData(owner, savedData.Teapot, instance)
+        table.insert(self.Teapot, teapot)
+
+        if self.IsWatered then
+            teapot:Grow() -- optional, if you want to grow it immediately
+        end
+    end
+
+    self.Instance:SetAttribute("Taken", self.IsTaken)
+    self.Instance:SetAttribute("Watered", self.IsWatered)
+
+    return self
+end
+
+function Field:ApplySavedData(data)
+    if not data then return end
+    
+    -- Apply saved field properties
+    self.IsTaken = data.IsTaken or false
+    self.IsWatered = data.IsWatered or false
+    
+    -- Set field attributes
+    self.Instance:SetAttribute("Taken", self.IsTaken)
+    self.Instance:SetAttribute("Watered", self.IsWatered)
+    
+    -- Apply saved teapot data if it exists
+    if data.Teapot and data.Teapot.Name then
+        -- Create teapot from saved data
+        local teapot = Teapot.FromSerializedData(self.Owner, data.Teapot, self.Instance)
+        table.insert(self.Teapot, teapot)
+        
+        -- If the field was watered, grow the teapot
+        if self.IsWatered then
+            teapot:Grow()
+        end
+    end
+end
 
 function Field.new(owner, instance, type)
     local self = setmetatable({}, Field)

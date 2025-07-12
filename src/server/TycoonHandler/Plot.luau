@@ -1,16 +1,16 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Field = require(game.ServerScriptService.Server.Field)
+local Field = require(script.Parent.Field)
 
 local Plot = {}
 Plot.__index = Plot
 
-function Plot.new(player, location, tycoonInstance, type)
+function Plot.new(player, location, tycoonInstance, plotType)
     local self = setmetatable({}, Plot)
     self.Owner = player
     self.Location = location
     self.Tycoon = tycoonInstance
-    self.Type = type
+    self.Type = plotType
     self.Fields = {}
 
     self:Init()
@@ -38,7 +38,9 @@ function Plot:Init()
     for _, field in plotClone:GetChildren() do
         if field.Name ~= "Base" then
             field.Name = locationSuffix .. field.Name
-            self.Fields[field.Name] = Field.new(self.Owner, field, fieldType)
+
+            local newFieldObject = Field.new(self.Owner, field, fieldType)
+            self.Fields[field.Name] = newFieldObject
         end
     end
 end
@@ -118,18 +120,32 @@ function Plot:CleanUp()
     self = {}
 end
 
+function Plot:ApplySavedData(savedFields)
+    -- Apply saved data to each field
+    for fieldName, fieldData in pairs(savedFields) do
+        if self.Fields[fieldName] then
+            self.Fields[fieldName]:ApplySavedData(fieldData)
+        end
+    end
+end
+
 --TODO:
 --Iterate through the plot, field, and teapot tables to retrieve
 ---Serializable data
 function Plot:GetSerializedData()
-    local saveData = {}
+    local saveData = {
+        Type = self.Type,
+        Fields = {},
+    }
 
-    --should return the object table without instance(s) and connection(s)
     for fieldName, fieldTable in pairs(self.Fields) do
-        saveData[fieldName] = self.Fields[fieldName]:GetSerializedData()
+        saveData.Fields[fieldName] = fieldTable:GetSerializedData()
+        print(saveData)
     end
 
+    print(saveData)
     return saveData
 end
+
 
 return Plot

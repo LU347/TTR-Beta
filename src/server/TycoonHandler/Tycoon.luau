@@ -1,7 +1,8 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local Button = require(game.ServerScriptService.Server.Button)
+local Button = require(script.Parent.Button)
+local Plot = require(script.Parent.Plot)
 
 local PlantSeed = ReplicatedStorage.RemoteEvents.PlantSeed
 local WaterField = ReplicatedStorage.RemoteEvents.WaterField
@@ -20,11 +21,52 @@ local templateButtonsFolder = TemplatePlot.Buttons
 --Contains non-serialized data (plot, field, and teapot instances)
 Tycoon.PlayerTycoons = {}
 
-function Tycoon.new(player, tycoonInstance, unlocked)
+function Tycoon:ApplySavedData(data)
+    print(data)
+
+    -- Load unlocked items
+    self.Unlocked = data and data.Unlocked or {}
+
+    -- Turn serialized plot data into Plot objects
+    self.Plots = {}
+    if data and data.Plots then
+        for plotName, plotTable in pairs(data.Plots) do
+            -- Construct the Plot object with the saved type
+            local plot = Plot.new(self.Owner, plotName, self.Instance, plotTable.Type)
+            self.Plots[plotName] = plot
+            
+            -- Apply saved field data to the plot
+            if plotTable.Fields then
+                plot:ApplySavedData(plotTable.Fields)
+            end
+        end
+    else
+        -- Create initial plot for new players
+        self:CreateInitialPlot()
+    end
+
+    -- Restore player attributes like Cash
+    if data and data.Cash ~= nil then
+        self.Owner:SetAttribute("Cash", data.Cash)
+    end
+end
+
+function Tycoon:CreateInitialPlot()
+    -- Create the first plot (PlotA) with a small plot type
+    local initialPlot = Plot.new(self.Owner, "PlotA", self.Instance, "Plot_Small")
+    self.Plots["PlotA"] = initialPlot
+    print("Created initial plot for player: " .. self.Owner.Name)
+end
+
+function Tycoon.new(player, tycoonInstance, playerData)
+    print(playerData)
+    playerData = playerData or nil
+    print(playerData)
+
     local self = setmetatable({}, Tycoon)
     self.Owner = player
-    self.Unlocked = unlocked or {}                   --Saved
-    self.Plots = {}                      --Saved
+    self.Unlocked = {}                 --Saved
+    self.Plots = {}                --Saved
     self.Instance = tycoonInstance       --Not Saved
     self.Buttons = {}                    --Not Saved
 
@@ -44,23 +86,16 @@ function Tycoon:Init()
     plotsFolder.Name = "Plots"
     plotsFolder.Parent = self.Instance
 
-    --Traverse through unlocked items
-    for _, unlockedItem in self.Unlocked do
-        self:CloneItem(unlockedItem)
-    end
-
     --Initialize Plot Locations--
     local tycoonPlots = templatePlotsFolder:Clone()
-
-    for _, plot in tycoonPlots:GetChildren() do
-        self:ClonePart(plot)
-        plot.Transparency = 1
-        plot.Parent = plotsFolder
+    for _, plotBase in tycoonPlots:GetChildren() do
+        self:ClonePart(plotBase)
+        plotBase.Transparency = 1
+        plotBase.Parent = plotsFolder
     end
-    
+
     --Buttons from the template tycoon are cloned and transferred onto the player's tycoon--
     local tycoonButtons = templateButtonsFolder:Clone()
-
     for _, button in tycoonButtons:GetChildren() do
         local item = button.Head:GetAttribute("ItemUnlock")
         if table.find(self.Unlocked, item) then
@@ -153,15 +188,32 @@ end
 
 local function getFieldTable(player, fieldName)
     --Finds the plot table and returns the field table that matches the fieldInstance
+    print("Looking for field: " .. fieldName .. " for player: " .. player.Name)
+    
     if Tycoon.PlayerTycoons[player.UserId] then
         local plots = Tycoon.PlayerTycoons[player.UserId].Plots
-        local plotLocation = "Plot" .. string.upper(string.sub(fieldName, 1,1))
+        print("Player has " .. #plots .. " plots")
         
-        if plots[plotLocation] then
-            local f = plots[plotLocation].Fields
-            return f[fieldName]
+        -- Search through all plots to find the field
+        for plotName, plot in pairs(plots) do
+            print("Checking plot: " .. plotName .. " with " .. #(plot.Fields or {}) .. " fields")
+            if plot.Fields then
+                for fieldKey, fieldValue in pairs(plot.Fields) do
+                    print("  Field: " .. fieldKey)
+                end
+                if plot.Fields[fieldName] then
+                    print("Found field: " .. fieldName .. " in plot: " .. plotName)
+                    return plot.Fields[fieldName]
+                end
+            end
         end
+        
+        warn("Field not found: " .. fieldName .. " for player: " .. player.Name)
+    else
+        warn("No tycoon found for player: " .. player.Name)
     end
+    
+    return nil
 end
 
 function getPlayerTycoon(player)
@@ -183,18 +235,33 @@ function setPlayerTycoon(player, key, value)
 end
 
 PlantSeed.OnServerEvent:Connect(function(player, fieldInstance, seed)
-    local fieldTable = getFieldTable(player, fieldInstance.Name)    
-    fieldTable:Plant(seed)
+    print("PlantSeed event received for field: " .. fieldInstance.Name .. " with seed: " .. seed)
+    local fieldTable = getFieldTable(player, fieldInstance.Name)
+    if fieldTable then
+        fieldTable:Plant(seed)
+    else
+        warn("Field table not found for: " .. fieldInstance.Name)
+    end
 end)
 
 WaterField.OnServerEvent:Connect(function(player, fieldInstance)
+    print("WaterField event received for field: " .. fieldInstance.Name)
     local fieldTable = getFieldTable(player, fieldInstance.Name)
-    fieldTable:Water()
+    if fieldTable then
+        fieldTable:Water()
+    else
+        warn("Field table not found for: " .. fieldInstance.Name)
+    end
 end)
 
 HarvestPot.OnServerEvent:Connect(function(player, teapot)
+    print("HarvestPot event received for teapot at location: " .. teapot:GetAttribute("Location"))
     local fieldTable = getFieldTable(player, teapot:GetAttribute("Location"))
-    fieldTable:Harvest()
+    if fieldTable then
+        fieldTable:Harvest()
+    else
+        warn("Field table not found for teapot location: " .. teapot:GetAttribute("Location"))
+    end
 end)
 
 return Tycoon
