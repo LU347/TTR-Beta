@@ -22,6 +22,8 @@ local templateButtonsFolder = TemplatePlot.Buttons
 Tycoon.PlayerTycoons = {}
 
 function Tycoon:ApplySavedData(data)
+    print(data)
+
     if not data then
         warn("No save data provided to ApplySavedData")
         return
@@ -46,11 +48,15 @@ function Tycoon:ApplySavedData(data)
     end
 end
 
-function Tycoon.new(player, tycoonInstance, unlocked, plotData)
+function Tycoon.new(player, tycoonInstance, playerData)
+    print(playerData)
+    playerData = playerData or nil
+    print(playerData)
+
     local self = setmetatable({}, Tycoon)
     self.Owner = player
-    self.Unlocked = unlocked or {}                   --Saved
-    self.Plots = plotData or {}                      --Saved
+    self.Unlocked = {}                 --Saved
+    self.Plots = {}                --Saved
     self.Instance = tycoonInstance       --Not Saved
     self.Buttons = {}                    --Not Saved
 
@@ -69,11 +75,6 @@ function Tycoon:Init()
     local plotsFolder = Instance.new("Folder")
     plotsFolder.Name = "Plots"
     plotsFolder.Parent = self.Instance
-
-    --Traverse through unlocked items
-    for _, unlockedItem in self.Unlocked do
-        self:CloneItem(unlockedItem)
-    end
 
     --Initialize Plot Locations--
     local tycoonPlots = templatePlotsFolder:Clone()

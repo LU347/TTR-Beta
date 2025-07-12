@@ -16,11 +16,13 @@ function Plot.new(player, location, tycoonInstance, plotType, fieldData)
 
     self:Init()
 
-    for fieldName, fieldData in pairs(self.FieldData) do
-        local fieldInstance = plotFolder:FindFirstChild(fieldName)
-        if fieldInstance then
-            local field = Field.FromSerializedData(owner, fieldInstance, fieldData)
-            self.Fields[fieldName] = field
+    if self.FieldData then
+        for fieldName, fieldData in pairs(self.FieldData) do
+            local fieldInstance = self.PlotInstance:FindFirstChild(fieldName)
+            if fieldInstance then
+                local field = Field.FromSerializedData(self.Owner, fieldInstance, fieldData)
+                self.Fields[fieldName] = field
+            end
         end
     end
     return self
