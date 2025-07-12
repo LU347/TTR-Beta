@@ -5,26 +5,16 @@ local Field = require(script.Parent.Field)
 local Plot = {}
 Plot.__index = Plot
 
-function Plot.new(player, location, tycoonInstance, plotType, fieldData)
+function Plot.new(player, location, tycoonInstance, plotType)
     local self = setmetatable({}, Plot)
     self.Owner = player
     self.Location = location
     self.Tycoon = tycoonInstance
     self.Type = plotType
     self.Fields = {}
-    self.FieldData = fieldData or nil
 
     self:Init()
 
-    if self.FieldData then
-        for fieldName, fieldData in pairs(self.FieldData) do
-            local fieldInstance = self.PlotInstance:FindFirstChild(fieldName)
-            if fieldInstance then
-                local field = Field.FromSerializedData(self.Owner, fieldInstance, fieldData)
-                self.Fields[fieldName] = field
-            end
-        end
-    end
     return self
 end
 
@@ -53,9 +43,6 @@ function Plot:Init()
             self.Fields[field.Name] = newFieldObject
         end
     end
-
-    -- Fields are loaded successfully once but if I do not do anything and leave
-    -- it would be overwritten
 end
 
 local function findFirstChildWithTag(parent, tag)
@@ -131,6 +118,15 @@ function Plot:CleanUp()
     end
     
     self = {}
+end
+
+function Plot:ApplySavedData(savedFields)
+    -- Apply saved data to each field
+    for fieldName, fieldData in pairs(savedFields) do
+        if self.Fields[fieldName] then
+            self.Fields[fieldName]:ApplySavedData(fieldData)
+        end
+    end
 end
 
 --TODO:

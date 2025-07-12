@@ -24,28 +24,38 @@ Tycoon.PlayerTycoons = {}
 function Tycoon:ApplySavedData(data)
     print(data)
 
-    if not data then
-        warn("No save data provided to ApplySavedData")
-        return
-    end
-
     -- Load unlocked items
-    self.Unlocked = data.Unlocked or {}
+    self.Unlocked = data and data.Unlocked or {}
 
     -- Turn serialized plot data into Plot objects
     self.Plots = {}
-    if data.Plots then
+    if data and data.Plots then
         for plotName, plotTable in pairs(data.Plots) do
-            -- Construct the Plot object now
-            local plot = Plot.new(self.Owner, plotName, self.Instance, plotTable.Type, plotTable.Fields)
+            -- Construct the Plot object with the saved type
+            local plot = Plot.new(self.Owner, plotName, self.Instance, plotTable.Type)
             self.Plots[plotName] = plot
+            
+            -- Apply saved field data to the plot
+            if plotTable.Fields then
+                plot:ApplySavedData(plotTable.Fields)
+            end
         end
+    else
+        -- Create initial plot for new players
+        self:CreateInitialPlot()
     end
 
     -- Restore player attributes like Cash
-    if data.Cash ~= nil then
+    if data and data.Cash ~= nil then
         self.Owner:SetAttribute("Cash", data.Cash)
     end
+end
+
+function Tycoon:CreateInitialPlot()
+    -- Create the first plot (PlotA) with a small plot type
+    local initialPlot = Plot.new(self.Owner, "PlotA", self.Instance, "Plot_Small")
+    self.Plots["PlotA"] = initialPlot
+    print("Created initial plot for player: " .. self.Owner.Name)
 end
 
 function Tycoon.new(player, tycoonInstance, playerData)
@@ -178,15 +188,32 @@ end
 
 local function getFieldTable(player, fieldName)
     --Finds the plot table and returns the field table that matches the fieldInstance
+    print("Looking for field: " .. fieldName .. " for player: " .. player.Name)
+    
     if Tycoon.PlayerTycoons[player.UserId] then
         local plots = Tycoon.PlayerTycoons[player.UserId].Plots
-        local plotLocation = "Plot" .. string.upper(string.sub(fieldName, 1,1))
+        print("Player has " .. #plots .. " plots")
         
-        if plots[plotLocation] then
-            local f = plots[plotLocation].Fields
-            return f[fieldName]
+        -- Search through all plots to find the field
+        for plotName, plot in pairs(plots) do
+            print("Checking plot: " .. plotName .. " with " .. #(plot.Fields or {}) .. " fields")
+            if plot.Fields then
+                for fieldKey, fieldValue in pairs(plot.Fields) do
+                    print("  Field: " .. fieldKey)
+                end
+                if plot.Fields[fieldName] then
+                    print("Found field: " .. fieldName .. " in plot: " .. plotName)
+                    return plot.Fields[fieldName]
+                end
+            end
         end
+        
+        warn("Field not found: " .. fieldName .. " for player: " .. player.Name)
+    else
+        warn("No tycoon found for player: " .. player.Name)
     end
+    
+    return nil
 end
 
 function getPlayerTycoon(player)
@@ -208,18 +235,33 @@ function setPlayerTycoon(player, key, value)
 end
 
 PlantSeed.OnServerEvent:Connect(function(player, fieldInstance, seed)
-    local fieldTable = getFieldTable(player, fieldInstance.Name)    
-    fieldTable:Plant(seed)
+    print("PlantSeed event received for field: " .. fieldInstance.Name .. " with seed: " .. seed)
+    local fieldTable = getFieldTable(player, fieldInstance.Name)
+    if fieldTable then
+        fieldTable:Plant(seed)
+    else
+        warn("Field table not found for: " .. fieldInstance.Name)
+    end
 end)
 
 WaterField.OnServerEvent:Connect(function(player, fieldInstance)
+    print("WaterField event received for field: " .. fieldInstance.Name)
     local fieldTable = getFieldTable(player, fieldInstance.Name)
-    fieldTable:Water()
+    if fieldTable then
+        fieldTable:Water()
+    else
+        warn("Field table not found for: " .. fieldInstance.Name)
+    end
 end)
 
 HarvestPot.OnServerEvent:Connect(function(player, teapot)
+    print("HarvestPot event received for teapot at location: " .. teapot:GetAttribute("Location"))
     local fieldTable = getFieldTable(player, teapot:GetAttribute("Location"))
-    fieldTable:Harvest()
+    if fieldTable then
+        fieldTable:Harvest()
+    else
+        warn("Field table not found for teapot location: " .. teapot:GetAttribute("Location"))
+    end
 end)
 
 return Tycoon

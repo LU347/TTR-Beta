@@ -44,6 +44,30 @@ function Field.FromSerializedData(owner, instance, savedData)
     return self
 end
 
+function Field:ApplySavedData(data)
+    if not data then return end
+    
+    -- Apply saved field properties
+    self.IsTaken = data.IsTaken or false
+    self.IsWatered = data.IsWatered or false
+    
+    -- Set field attributes
+    self.Instance:SetAttribute("Taken", self.IsTaken)
+    self.Instance:SetAttribute("Watered", self.IsWatered)
+    
+    -- Apply saved teapot data if it exists
+    if data.Teapot and data.Teapot.Name then
+        -- Create teapot from saved data
+        local teapot = Teapot.FromSerializedData(self.Owner, data.Teapot, self.Instance)
+        table.insert(self.Teapot, teapot)
+        
+        -- If the field was watered, grow the teapot
+        if self.IsWatered then
+            teapot:Grow()
+        end
+    end
+end
+
 function Field.new(owner, instance, type)
     local self = setmetatable({}, Field)
 
