@@ -259,7 +259,12 @@ PlantSeed.OnServerEvent:Connect(function(player, fieldInstance, seed)
 	print("PlantSeed event received for field: " .. fieldInstance.Name .. " with seed: " .. seed)
 	local fieldTable = getFieldTable(player, fieldInstance.Name)
 	if fieldTable then
-		fieldTable:Plant(seed)
+		local success = fieldTable:Plant(seed)
+		if not success then
+			warn("Failed to plant seed: " .. tostring(seed) .. " on field: " .. fieldInstance.Name)
+		else
+			print("Successfully planted " .. seed .. " on field: " .. fieldInstance.Name)
+		end
 	else
 		warn("Field table not found for: " .. fieldInstance.Name)
 	end
