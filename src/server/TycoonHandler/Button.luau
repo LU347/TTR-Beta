@@ -104,7 +104,12 @@ function Button:UpgradePlot()
 end
 
 -- self.Cost = currentIndex * 75 + (2 * self.Cost) -- new cost
-function Button:UpdateButtonForUpgrade()
+function Button:UpdateButtonForUpgrade(currentProgression)
+    currentProgression = currentProgression or nil 
+    if currentProgression then
+       self.Item = currentProgression
+    end
+
     local upgradeInfo = PLOT_UPGRADES[self.Item]
     local buttonModel = self.Instance.Parent
 

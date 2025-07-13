@@ -62,8 +62,7 @@ function Tycoon:ApplySavedData(data)
 		if upgradeable then
 			local location = button.Instance:GetAttribute("Location")
 			if self.Plots[location] then
-				print("button found")
-                button:UpdateButtonForUpgrade()
+                button:UpdateButtonForUpgrade(self.Plots[location]["Type"])
 			end
 		end
 	end
