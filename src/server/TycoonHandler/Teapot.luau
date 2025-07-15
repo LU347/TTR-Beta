@@ -14,6 +14,25 @@ local function getRandomizedAngle()
     return CFrame.fromEulerAngles(0, angle, 0)
 end
 
+local function createProximityPrompt(teapotInstance, teapotObject)
+    local proximityPrompt = Instance.new("ProximityPrompt")
+    proximityPrompt.ObjectText = "Teapot"
+    proximityPrompt.ActionText = "Harvest"
+    proximityPrompt.HoldDuration = 0.5
+    proximityPrompt.MaxActivationDistance = 8
+    proximityPrompt.RequiresLineOfSight = false
+    proximityPrompt.Parent = teapotInstance
+    
+    -- Connect the proximity prompt trigger to the harvest function
+    proximityPrompt.Triggered:Connect(function(player)
+        if player.UserId == teapotInstance:GetAttribute("Owner") then
+            teapotObject:Harvest()
+        end
+    end)
+    
+    return proximityPrompt
+end
+
 function Teapot.FromSerializedData(owner, savedData, fieldInstance)
     local self = setmetatable({}, Teapot)
     
@@ -65,6 +84,9 @@ function Teapot.FromSerializedData(owner, savedData, fieldInstance)
         currentValue.Value = self.CurrentValue
     end
     
+    -- Add proximity prompt for harvesting (for teapots loaded from saved data)
+    self.ProximityPrompt = createProximityPrompt(self.Instance, self)
+    
     return self
 end
 
@@ -105,6 +127,9 @@ function Teapot:Init()
     currentValue.Name = "CurrentValue"
     currentValue.Value = 0
     currentValue.Parent = self.Instance
+
+    -- Add proximity prompt for harvesting
+    self.ProximityPrompt = createProximityPrompt(self.Instance, self)
 
     --Instance Size Change Signal
     self.Instance:GetPropertyChangedSignal("Size"):Connect(function()
@@ -199,7 +224,33 @@ function Teapot:GetSerializedData()
     return serializableData
 end
 
+function Teapot:Harvest()
+    -- Find the field that contains this teapot and call its harvest method
+    local fieldName = self.Instance:GetAttribute("Location")
+    if fieldName then
+        -- Get the field instance
+        local fieldInstance = self.FieldInstance
+        if fieldInstance then
+            -- Find the field table by searching through the player's tycoon
+            local playerTycoon = require(script.Parent.Tycoon).PlayerTycoons[self.Owner.UserId]
+            if playerTycoon then
+                for plotName, plot in pairs(playerTycoon.Plots) do
+                    if plot.Fields and plot.Fields[fieldName] then
+                        plot.Fields[fieldName]:Harvest()
+                        return
+                    end
+                end
+            end
+        end
+    end
+end
+
 function Teapot:CleanUp()
+    if self.ProximityPrompt then
+        self.ProximityPrompt:Destroy()
+        self.ProximityPrompt = nil
+    end
+    
     if self.Instance then
         self.Instance:Destroy()
     end

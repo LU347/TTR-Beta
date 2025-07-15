@@ -5,7 +5,6 @@ local UserInputService = game:GetService("UserInputService")
 
 local PlantSeed = ReplicatedStorage.RemoteEvents.PlantSeed
 local WaterField = ReplicatedStorage.RemoteEvents.WaterField
-local HarvestPot = ReplicatedStorage.RemoteEvents.HarvestPot
 
 local currentAction = ""
 local currentSeed = "Amazonite" -- Default seed
@@ -28,8 +27,7 @@ local function onInputBegan(input, _gameProcessed)
 
     local actionMap = {
         [Enum.KeyCode.One] = "Plant",
-        [Enum.KeyCode.Two] = "Water",
-        [Enum.KeyCode.Three] = "Harvest"
+        [Enum.KeyCode.Two] = "Water"
     }
     
     currentAction = actionMap[input.KeyCode] or currentAction
@@ -55,8 +53,6 @@ local function onInputBegan(input, _gameProcessed)
         elseif currentAction == "Water" and not target:GetAttribute("Watered") then
             WaterField:FireServer(target)
         end
-    elseif target:HasTag("Teapot") and currentAction == "Harvest" then
-        HarvestPot:FireServer(target)
     end
 end
 
