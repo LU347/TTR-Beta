@@ -4,6 +4,7 @@ local TweenService = game:GetService("TweenService")
 local ProximityPromptService = game:GetService("ProximityPromptService")
 
 local TeapotData = require(script.Parent.TeapotData)
+local TeapotEffects = require(script.TeapotEffects)
 
 local Teapot = {}
 Teapot.__index = Teapot
@@ -87,7 +88,7 @@ function Teapot.FromSerializedData(owner, savedData, fieldInstance)
     end
     
     -- Add proximity prompt for harvesting (for teapots loaded from saved data)
-    self.ProximityPrompt = createProximityPrompt(self.Instance, self)
+    --self.ProximityPrompt = createProximityPrompt(self.Instance, self)
     
     return self
 end
@@ -139,6 +140,7 @@ function Teapot:Init()
         self.CurrentSize = self.Instance.Size
     end)
 
+    TeapotEffects.AttachParticles(self.Instance)
 
     CollectionService:AddTag(self.Instance, "Teapot")
     self:ConnectPromptEvents()
@@ -248,13 +250,15 @@ function Teapot:ConnectPromptEvents()
     table.insert(self._promptConnections, ProximityPromptService.PromptButtonHoldBegan:Connect(function(prompt, player)
         if prompt == self.ProximityPrompt and isOwner(player) then
             self:PauseGrowTween()
-            self:PlayShakeTween()
+            --self:PlayShakeTween()
+            TeapotEffects.PlayEffect(self.Instance)
         end
     end))
     table.insert(self._promptConnections, ProximityPromptService.PromptButtonHoldEnded:Connect(function(prompt, player)
         if prompt == self.ProximityPrompt and isOwner(player) then
-            self:StopShakeTween()
+            --self:StopShakeTween()
             self:ResumeGrowTween()
+            TeapotEffects.StopEffect(self.Instance)
         end
     end))
 end
@@ -337,9 +341,10 @@ function Teapot:CleanUp()
     end
     
     if self.Instance then
+        TeapotEffects.Cleanup(self.Instance)
         self.Instance:Destroy()
     end
-    
+
     self = nil
 end
 

@@ -28,24 +28,6 @@ function LoadPlayerTycoonData(userId)
 	end
 end
 
---[[
-function CreateTycoonInstance(player, unlocked, plotData)
-    unlocked = unlocked or nil
-    plotData = plotData or nil
-
-    for _, plotBase in PlotsFolder:GetChildren() do
-        if not plotBase:GetAttribute("Taken") then
-            plotBase:SetAttribute("Taken", true)
-            plotBase:SetAttribute("Owner", player.UserId)
-            
-            --TODO: Get player save data and load items
-            local playerTycoon = TycoonHandler.CreateTycoon(player, plotBase)
-        end
-    end
-end
-]]
---
-
 function createTycoon(player, playerData)
 	playerData = playerData or nil
 
