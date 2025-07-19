@@ -20,7 +20,7 @@ local function createProximityPrompt(teapotInstance, teapotObject)
     local proximityPrompt = Instance.new("ProximityPrompt")
     proximityPrompt.ObjectText = "Teapot"
     proximityPrompt.ActionText = "Harvest"
-    proximityPrompt.HoldDuration = 0.5
+    proximityPrompt.HoldDuration = 1.5
     proximityPrompt.MaxActivationDistance = 20
     proximityPrompt.RequiresLineOfSight = false
     proximityPrompt.Parent = teapotInstance
