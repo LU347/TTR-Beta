@@ -1,8 +1,10 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
+local ProximityPromptService = game:GetService("ProximityPromptService")
 
 local TeapotData = require(script.Parent.TeapotData)
+local TeapotEffects = require(script.TeapotEffects)
 
 local Teapot = {}
 Teapot.__index = Teapot
@@ -12,6 +14,25 @@ local random = Random.new()
 local function getRandomizedAngle()
     local angle = random:NextInteger(0, 180)
     return CFrame.fromEulerAngles(0, angle, 0)
+end
+
+local function createProximityPrompt(teapotInstance, teapotObject)
+    local proximityPrompt = Instance.new("ProximityPrompt")
+    proximityPrompt.ObjectText = "Teapot"
+    proximityPrompt.ActionText = "Harvest"
+    proximityPrompt.HoldDuration = 1.5
+    proximityPrompt.MaxActivationDistance = 20
+    proximityPrompt.RequiresLineOfSight = false
+    proximityPrompt.Parent = teapotInstance
+    
+    -- Connect the proximity prompt trigger to the harvest function
+    proximityPrompt.Triggered:Connect(function(player)
+        if player.UserId == teapotInstance:GetAttribute("Owner") then
+            teapotObject:Harvest()
+        end
+    end)
+    
+    return proximityPrompt
 end
 
 function Teapot.FromSerializedData(owner, savedData, fieldInstance)
@@ -36,6 +57,7 @@ function Teapot.FromSerializedData(owner, savedData, fieldInstance)
         self.FieldInstance.CFrame.Z
     ) * getRandomizedAngle()
     self.Instance:PivotTo(teapotCFrame)
+    self.OriginalCFrame = self.Instance.CFrame
     
     -- Restore the saved size and position
     if savedData.CurrentSize then
@@ -64,7 +86,7 @@ function Teapot.FromSerializedData(owner, savedData, fieldInstance)
     if currentValue then
         currentValue.Value = self.CurrentValue
     end
-    
+
     return self
 end
 
@@ -93,6 +115,7 @@ function Teapot:Init()
 
     self.Instance = teapot:Clone()
     self.Instance:PivotTo(teapotCFrame)
+    self.OriginalCFrame = self.Instance.CFrame
     self.Instance.Anchored = true
     self.Instance.Parent = self.FieldInstance
 
@@ -106,47 +129,111 @@ function Teapot:Init()
     currentValue.Value = 0
     currentValue.Parent = self.Instance
 
+    -- Add proximity prompt for harvesting
+    self.ProximityPrompt = createProximityPrompt(self.Instance, self)
+
     --Instance Size Change Signal
     self.Instance:GetPropertyChangedSignal("Size"):Connect(function()
         self.CurrentSize = self.Instance.Size
     end)
 
+    TeapotEffects.AttachParticles(self.Instance)
 
     CollectionService:AddTag(self.Instance, "Teapot")
+    self:ConnectPromptEvents()
 end
 
-function Teapot:Grow()
-    local heightDiff = self.MaxSize.Y / 2
-    local growTime = self.MaxSize.Z * self.Type.GrowthRate
-    print(growTime)
+function Teapot:CreateGrowTween()
+    -- Clamp the target size so it never exceeds MaxSize
+    local currentSize = self.Instance.Size
+    local maxSize = self.MaxSize
 
+    -- If already at or above max size, do not grow further
+    if currentSize.X >= maxSize.X and currentSize.Y >= maxSize.Y and currentSize.Z >= maxSize.Z then
+        self.GrowTween = nil
+        self.GrowValueTween = nil
+        return
+    end
+
+    -- Tween to MaxSize, not current + MaxSize
     local tweenGoal = {}
-    tweenGoal.Size = self.Instance.Size + self.MaxSize
+    tweenGoal.Size = maxSize
+    local heightDiff = (maxSize.Y - currentSize.Y) / 2
     tweenGoal.Position = Vector3.new(self.Instance.Position.X, self.Instance.Position.Y + heightDiff, self.Instance.Position.Z)
-
+    local growTime = (maxSize.Z - currentSize.Z) * self.Type.GrowthRate
     local tweenInfo = TweenInfo.new(
-        growTime,
+        math.max(growTime, 0.1),
         Enum.EasingStyle.Sine,
         Enum.EasingDirection.In,
         0,
         false,
         0
     )
-
-    local tweenMesh = TweenService:Create(self.Instance, tweenInfo, tweenGoal)
-    tweenMesh:Play()
-
+    self.GrowTween = TweenService:Create(self.Instance, tweenInfo, tweenGoal)
     local currentValue = self.Instance:FindFirstChild("CurrentValue")
     if currentValue then
-        local tweenValue = TweenService:Create(currentValue, tweenInfo, { Value = self.MaxValue })
-        tweenValue:Play()
+        self.GrowValueTween = TweenService:Create(currentValue, tweenInfo, { Value = self.MaxValue })
+    else
+        self.GrowValueTween = nil
+    end
+end
 
+function Teapot:Grow()
+    self:CreateGrowTween()
+    if self.GrowTween then self.GrowTween:Play() end
+    if self.GrowValueTween then self.GrowValueTween:Play() end
+    local currentValue = self.Instance:FindFirstChild("CurrentValue")
+    if currentValue then
         currentValue.Changed:Connect(function(newValue)
             self.CurrentValue = newValue
         end)
-    else
-        print("value instance does not exist")
     end
+end
+
+function Teapot:PauseGrowTween()
+    if self.GrowTween and self.GrowTween.PlaybackState == Enum.PlaybackState.Playing then
+        self.GrowTween:Pause()
+    end
+    if self.GrowValueTween and self.GrowValueTween.PlaybackState == Enum.PlaybackState.Playing then
+        self.GrowValueTween:Pause()
+    end
+end
+
+function Teapot:ResumeGrowTween()
+    if self.GrowTween and self.GrowTween.PlaybackState == Enum.PlaybackState.Paused then
+        self.GrowTween:Play()
+    end
+    if self.GrowValueTween and self.GrowValueTween.PlaybackState == Enum.PlaybackState.Paused then
+        self.GrowValueTween:Play()
+    end
+end
+
+-- Hook up ProximityPrompt hold events for this teapot
+function Teapot:ConnectPromptEvents()
+    if not self.ProximityPrompt then return end
+    if self._promptConnections then
+        for _, conn in ipairs(self._promptConnections) do
+            conn:Disconnect()
+        end
+    end
+    self._promptConnections = {}
+    local function isOwner(player)
+        return player and player.UserId == self.Instance:GetAttribute("Owner")
+    end
+    table.insert(self._promptConnections, ProximityPromptService.PromptButtonHoldBegan:Connect(function(prompt, player)
+        if prompt == self.ProximityPrompt and isOwner(player) then
+            self:PauseGrowTween()
+            TeapotEffects.PlayEffect(self.Instance)
+            TeapotEffects.StartShaking(self.Instance)
+        end
+    end))
+    table.insert(self._promptConnections, ProximityPromptService.PromptButtonHoldEnded:Connect(function(prompt, player)
+        if prompt == self.ProximityPrompt and isOwner(player) then
+            self:ResumeGrowTween()
+            TeapotEffects.StopEffect(self.Instance)
+            TeapotEffects.StopShaking(self.Instance)
+        end
+    end))
 end
 
 function Teapot:ApplySavedData(data)
@@ -199,11 +286,38 @@ function Teapot:GetSerializedData()
     return serializableData
 end
 
+function Teapot:Harvest()
+    -- Find the field that contains this teapot and call its harvest method
+    local fieldName = self.Instance:GetAttribute("Location")
+    if fieldName then
+        -- Get the field instance
+        local fieldInstance = self.FieldInstance
+        if fieldInstance then
+            -- Find the field table by searching through the player's tycoon
+            local playerTycoon = require(script.Parent.Tycoon).PlayerTycoons[self.Owner.UserId]
+            if playerTycoon then
+                for plotName, plot in pairs(playerTycoon.Plots) do
+                    if plot.Fields and plot.Fields[fieldName] then
+                        plot.Fields[fieldName]:Harvest()
+                        return
+                    end
+                end
+            end
+        end
+    end
+end
+
 function Teapot:CleanUp()
-    if self.Instance then
-        self.Instance:Destroy()
+    if self.ProximityPrompt then
+        self.ProximityPrompt:Destroy()
+        self.ProximityPrompt = nil
     end
     
+    if self.Instance then
+        TeapotEffects.Cleanup(self.Instance)
+        self.Instance:Destroy()
+    end
+
     self = nil
 end
 
