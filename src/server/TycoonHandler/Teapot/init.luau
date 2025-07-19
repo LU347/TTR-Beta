@@ -86,10 +86,7 @@ function Teapot.FromSerializedData(owner, savedData, fieldInstance)
     if currentValue then
         currentValue.Value = self.CurrentValue
     end
-    
-    -- Add proximity prompt for harvesting (for teapots loaded from saved data)
-    --self.ProximityPrompt = createProximityPrompt(self.Instance, self)
-    
+
     return self
 end
 
@@ -193,20 +190,6 @@ function Teapot:Grow()
     end
 end
 
-function Teapot:CreateShakeTween()
-    if not self.OriginalCFrame then
-        self.OriginalCFrame = self.Instance.CFrame
-    end
-    local shakeInfo = TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, 10, true)
-    local shakeGoal = { CFrame = self.OriginalCFrame * CFrame.Angles(0, 0, math.rad(5)) }
-    self.ShakeTween = TweenService:Create(self.Instance, shakeInfo, shakeGoal)
-end
-
-function Teapot:PlayShakeTween()
-    if not self.ShakeTween then self:CreateShakeTween() end
-    if self.ShakeTween then self.ShakeTween:Play() end
-end
-
 function Teapot:PauseGrowTween()
     if self.GrowTween and self.GrowTween.PlaybackState == Enum.PlaybackState.Playing then
         self.GrowTween:Pause()
@@ -225,16 +208,6 @@ function Teapot:ResumeGrowTween()
     end
 end
 
-function Teapot:StopShakeTween()
-    if self.ShakeTween then
-        self.ShakeTween:Cancel()
-        self.ShakeTween = nil
-    end
-    if self.OriginalCFrame then
-        self.Instance.CFrame = self.OriginalCFrame
-    end
-end
-
 -- Hook up ProximityPrompt hold events for this teapot
 function Teapot:ConnectPromptEvents()
     if not self.ProximityPrompt then return end
@@ -250,14 +223,12 @@ function Teapot:ConnectPromptEvents()
     table.insert(self._promptConnections, ProximityPromptService.PromptButtonHoldBegan:Connect(function(prompt, player)
         if prompt == self.ProximityPrompt and isOwner(player) then
             self:PauseGrowTween()
-            --self:PlayShakeTween()
             TeapotEffects.PlayEffect(self.Instance)
             TeapotEffects.StartShaking(self.Instance)
         end
     end))
     table.insert(self._promptConnections, ProximityPromptService.PromptButtonHoldEnded:Connect(function(prompt, player)
         if prompt == self.ProximityPrompt and isOwner(player) then
-            --self:StopShakeTween()
             self:ResumeGrowTween()
             TeapotEffects.StopEffect(self.Instance)
             TeapotEffects.StopShaking(self.Instance)
