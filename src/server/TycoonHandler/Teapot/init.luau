@@ -252,6 +252,7 @@ function Teapot:ConnectPromptEvents()
             self:PauseGrowTween()
             --self:PlayShakeTween()
             TeapotEffects.PlayEffect(self.Instance)
+            TeapotEffects.StartShaking(self.Instance)
         end
     end))
     table.insert(self._promptConnections, ProximityPromptService.PromptButtonHoldEnded:Connect(function(prompt, player)
@@ -259,6 +260,7 @@ function Teapot:ConnectPromptEvents()
             --self:StopShakeTween()
             self:ResumeGrowTween()
             TeapotEffects.StopEffect(self.Instance)
+            TeapotEffects.StopShaking(self.Instance)
         end
     end))
 end

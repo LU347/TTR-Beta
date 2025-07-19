@@ -3,6 +3,8 @@ local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local ShakeEvent = ReplicatedStorage.RemoteEvents.TeapotShake
+
 local TeapotEffects = {}
 
 -- Internal cache for attached particle parts
@@ -41,8 +43,50 @@ function TeapotEffects.AttachParticles(teapot)
 		Part = clone,
 		Dirt1 = clone:WaitForChild("Dirt1"),
 		Dirt2 = clone:WaitForChild("Dirt2"),
-		Sound = clone:WaitForChild("dirt")
+		Sound = clone:WaitForChild("dirt"),
+        BaseOrientation = teapot.Orientation,
+        Rotating = false
 	}
+end
+
+function TeapotEffects.StartShaking(teapot)
+    if teapot then
+        ShakeEvent:FireAllClients("start", teapot)
+    end
+    --[[
+	local info = attached[teapot]
+	if not info or info.Rotating then return end
+
+	info.Rotating = true
+	coroutine.wrap(function()
+		local twistSpeedY = 10
+		local rockSpeedX = 25
+		local largeTwistAmount = 15
+		local smallRockAmount = 5
+		local base = info.BaseOrientation
+
+		while info.Rotating and teapot and teapot.Parent do
+			local t = tick()
+			local y = math.sin(t * twistSpeedY) * largeTwistAmount
+			local x = math.sin(t * rockSpeedX) * smallRockAmount
+
+			teapot.Orientation = base + Vector3.new(x, y, 0)
+			RunService.RenderStepped:Wait()
+		end
+
+		-- Reset to base orientation
+		local tween = TweenService:Create(teapot, TweenInfo.new(0.75, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			Orientation = base
+		})
+		tween:Play()
+	end)()
+    ]]--
+end
+
+function TeapotEffects.StopShaking(teapot)
+    if teapot then
+        ShakeEvent:FireAllClients("stop", teapot)
+    end
 end
 
 function TeapotEffects.PlayEffect(teapot)
