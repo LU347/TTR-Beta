@@ -37,8 +37,6 @@ local function adjustEmitters(teapot, particlePart)
 	end
 end
 
-
-
 function TeapotEffects.AttachParticles(teapot)
 	if not teapot then
 		warn("Invalid teapot provided")
@@ -82,7 +80,6 @@ function TeapotEffects.AttachParticles(teapot)
 	-- Store for cleanup later
 	attached[teapot].SizeConnection = teapot:GetPropertyChangedSignal("Size"):Connect(function()
 		adjustEmitters(teapot, clone)
-        print("ADJUSTING EMITTERS")
 	end)
 
 	-- Initial adjustment

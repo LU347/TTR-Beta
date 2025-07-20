@@ -21,7 +21,7 @@ local function createProximityPrompt(teapotInstance, teapotObject)
     proximityPrompt.ObjectText = "Teapot"
     proximityPrompt.ActionText = "Harvest"
     proximityPrompt.HoldDuration = 1.5
-    proximityPrompt.MaxActivationDistance = 20
+    proximityPrompt.MaxActivationDistance = 10
     proximityPrompt.RequiresLineOfSight = false
     proximityPrompt.Parent = teapotInstance
     
@@ -158,8 +158,10 @@ function Teapot:CreateGrowTween()
     -- Tween to MaxSize, not current + MaxSize
     local tweenGoal = {}
     tweenGoal.Size = maxSize
+
     local heightDiff = (maxSize.Y - currentSize.Y) / 2
     tweenGoal.Position = Vector3.new(self.Instance.Position.X, self.Instance.Position.Y + heightDiff, self.Instance.Position.Z)
+
     local growTime = (maxSize.Z - currentSize.Z) * self.Type.GrowthRate
     local tweenInfo = TweenInfo.new(
         math.max(growTime, 0.1),
@@ -169,8 +171,11 @@ function Teapot:CreateGrowTween()
         false,
         0
     )
+
     self.GrowTween = TweenService:Create(self.Instance, tweenInfo, tweenGoal)
+
     local currentValue = self.Instance:FindFirstChild("CurrentValue")
+
     if currentValue then
         self.GrowValueTween = TweenService:Create(currentValue, tweenInfo, { Value = self.MaxValue })
     else
@@ -180,8 +185,10 @@ end
 
 function Teapot:Grow()
     self:CreateGrowTween()
+
     if self.GrowTween then self.GrowTween:Play() end
     if self.GrowValueTween then self.GrowValueTween:Play() end
+
     local currentValue = self.Instance:FindFirstChild("CurrentValue")
     if currentValue then
         currentValue.Changed:Connect(function(newValue)
@@ -194,6 +201,7 @@ function Teapot:PauseGrowTween()
     if self.GrowTween and self.GrowTween.PlaybackState == Enum.PlaybackState.Playing then
         self.GrowTween:Pause()
     end
+
     if self.GrowValueTween and self.GrowValueTween.PlaybackState == Enum.PlaybackState.Playing then
         self.GrowValueTween:Pause()
     end
@@ -203,6 +211,7 @@ function Teapot:ResumeGrowTween()
     if self.GrowTween and self.GrowTween.PlaybackState == Enum.PlaybackState.Paused then
         self.GrowTween:Play()
     end
+
     if self.GrowValueTween and self.GrowValueTween.PlaybackState == Enum.PlaybackState.Paused then
         self.GrowValueTween:Play()
     end
@@ -216,7 +225,9 @@ function Teapot:ConnectPromptEvents()
             conn:Disconnect()
         end
     end
+
     self._promptConnections = {}
+
     local function isOwner(player)
         return player and player.UserId == self.Instance:GetAttribute("Owner")
     end
