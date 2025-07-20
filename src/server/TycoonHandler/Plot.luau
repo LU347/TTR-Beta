@@ -140,10 +140,8 @@ function Plot:GetSerializedData()
 
     for fieldName, fieldTable in pairs(self.Fields) do
         saveData.Fields[fieldName] = fieldTable:GetSerializedData()
-        print(saveData)
     end
-
-    print(saveData)
+    
     return saveData
 end
 
