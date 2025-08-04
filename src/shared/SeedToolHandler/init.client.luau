@@ -23,18 +23,18 @@ local function handleMouseClick()
 	if not CollectionService:HasTag(target, "Field") then
 		return
 	end
+
 	if target:GetAttribute("Owner") ~= localPlayer.UserId then
 		return
 	end
 
 	if target:GetAttribute("Taken") == false then
 		PlantSeedEvent:FireServer(target, seedName, seedType)
+		quantity -= 1
+
+		tool:SetAttribute("Quantity", quantity)
+		tool.Name = seedName .. " x" .. tostring(quantity)
 	end
-
-	quantity -= 1
-
-	tool:SetAttribute("Quantity", quantity)
-    tool.Name = seedName .. " x" .. tostring(quantity)
 
 	if quantity <= 0 then
 		tool:Destroy()
