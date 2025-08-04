@@ -45,7 +45,7 @@ function createTycoon(player, playerData)
 				tycoonObject:ApplySavedData(playerData)
 			end
 
-			break
+			return
 		end
 	end
 end
@@ -73,14 +73,21 @@ function onPlayerAdded(player)
 		player:SetAttribute("Cash", STARTING_CASH)
 	end
 
-	print(playerData)
-
 	createTycoon(player, playerData)
-	--playerTycoon = CreateTycoonInstance(player, playerData)
 
 	player.CharacterAdded:Connect(function(char)
 		if char then
 			wait()
+
+			local wateringCan = Instance.new("Tool")
+			wateringCan.RequiresHandle = false
+			wateringCan.Name = "Watering Can"
+
+			local wateringCanHandler = ReplicatedStorage.Shared:WaitForChild("WateringCanHandler"):Clone()
+			wateringCanHandler.Parent = wateringCan
+			
+			wateringCan.Parent = player.Backpack
+
 			for _, spawn in pairs(CollectionService:GetTagged(SpawnTag)) do
 				if spawn:GetAttribute("Owner") == player.UserId then
 					local humanoidRootPart = char:WaitForChild("HumanoidRootPart")
