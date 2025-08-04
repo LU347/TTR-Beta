@@ -5,7 +5,6 @@ local TweenService = game:GetService("TweenService")
 
 local Teapot = require(script.Parent.Teapot)
 local TeapotData = require(script.Parent.TeapotData)
-local SeedPacket = require(script.Parent.SeedPacket)
 local Enums = require(ReplicatedStorage.Shared.Enums)
 
 local PlaySoundEvent = ReplicatedStorage.RemoteEvents.PlaySound
@@ -125,11 +124,7 @@ function Field:PlaySound(action)
 	PlaySoundEvent:FireClient(self.Owner, action)
 end
 
-function Field:Plant(seed)
-	-- Create a seed packet from the seed name
-	local seedPacket = SeedPacket.new(seed, 1)
-
-	local seedType = seedPacket.Type
+function Field:Plant(seedName, seedType)
 	local fieldType = Enums.fieldTypes[self.Type]
 
 	if not seedType or not fieldType then
@@ -137,7 +132,7 @@ function Field:Plant(seed)
 		return false
 	end
 
-	if seedType.Order > fieldType.Order then
+	if Enums.seedTypes[seedType].Order > fieldType.Order then
 		warn("Seed type too large for this field")
 		return false
 	end
@@ -148,7 +143,7 @@ function Field:Plant(seed)
 	self.Instance:SetAttribute("Taken", true)
 
 	-- Plant the seed packet to create a teapot
-	local teapot = seedPacket:Plant(self.Owner, self.Instance)
+	local teapot = Teapot.new(self.Owner, seedName, self.Instance)
 
 	if teapot then
 		table.insert(self.Teapot, teapot)
@@ -163,7 +158,6 @@ function Field:Plant(seed)
 		warn("Failed to create teapot from seed packet")
 		return false
 	end
-
 end
 
 function Field:Water()

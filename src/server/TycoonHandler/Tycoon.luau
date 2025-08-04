@@ -255,11 +255,11 @@ function setPlayerTycoon(player, key, value)
 	warn("Failed to update data for " .. player.Name)
 end
 
-PlantSeed.OnServerEvent:Connect(function(player, fieldInstance, seed)
+PlantSeed.OnServerEvent:Connect(function(player, fieldInstance, seed, seedType)
 	print("PlantSeed event received for field: " .. fieldInstance.Name .. " with seed: " .. seed)
 	local fieldTable = getFieldTable(player, fieldInstance.Name)
 	if fieldTable then
-		local success = fieldTable:Plant(seed)
+		local success = fieldTable:Plant(seed, seedType)
 		if not success then
 			warn("Failed to plant seed: " .. tostring(seed) .. " on field: " .. fieldInstance.Name)
 		else
