@@ -24,4 +24,8 @@ button.Touched:Connect(function(hit)
 		local seedTool = Tool.new(player, TEST_SEED)
 		seedTool:CreateToolInstance()
 	end
+
+	task.wait(5)
+
+	debounce = false
 end)

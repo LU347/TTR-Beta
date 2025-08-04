@@ -30,7 +30,9 @@ function Tool:CreateToolInstance()
 			local newQty = currentQty + self.Quantity
 
 			tool:SetAttribute("Quantity", newQty)
-			tool.Name = self.SeedName .. " x" .. newQty
+			self.Quantity = newQty
+
+			tool.Name = self.SeedName .. " x" .. self.Quantity
 
 			return tool
 		end
@@ -51,5 +53,6 @@ function Tool:CreateToolInstance()
 	toolInstance.Parent = backpack
 	return toolInstance
 end
+
 
 return Tool
