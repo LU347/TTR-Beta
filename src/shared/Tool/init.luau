@@ -11,7 +11,7 @@ function Tool.new(player, seedName, amount)
 	local self = setmetatable({}, Tool)
 	self.SeedName = seedName
 	self.SeedType = "Small"
-	self.Quantity = amount or 1
+	self.Quantity = amount or 4
 	self.Owner = player
 
 	return self

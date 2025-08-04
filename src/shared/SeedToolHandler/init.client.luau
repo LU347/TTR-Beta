@@ -9,6 +9,10 @@ local mouse = localPlayer:GetMouse()
 
 local tool = script.Parent
 
+local seedName = tool:GetAttribute("SeedName")
+local seedType = tool:GetAttribute("SeedType")
+local quantity = tool:GetAttribute("Quantity")
+
 local function handleMouseClick()
 	if not mouse or not mouse.Target then
 		return
@@ -23,18 +27,17 @@ local function handleMouseClick()
 		return
 	end
 
-	local seedName = tool:GetAttribute("SeedName")
-	if not seedName then
-		return
-	end
-
-	local seedType = tool:GetAttribute("SeedType")
-	if not seedType then
-		return
-	end
-
 	if target:GetAttribute("Taken") == false then
 		PlantSeedEvent:FireServer(target, seedName, seedType)
+	end
+
+	quantity -= 1
+
+	tool:SetAttribute("Quantity", quantity)
+    tool.Name = seedName .. " x" .. tostring(quantity)
+
+	if quantity <= 0 then
+		tool:Destroy()
 	end
 end
 
