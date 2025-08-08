@@ -9,6 +9,11 @@ local debounce = false
 local TEST_SEED = "Original"
 local TEST_TYPE = "Small"
 
+local function createSeedTool(player, seedName)
+	local seedTool = Tool.new(player, seedName)
+	seedTool:CreateToolInstance()
+end
+
 button.Touched:Connect(function(hit)
 	local humanoid = hit.Parent:FindFirstChild("Humanoid")
 	if not humanoid then
