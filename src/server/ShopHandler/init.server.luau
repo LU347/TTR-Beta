@@ -6,8 +6,8 @@ local Tool = require(ReplicatedStorage.Shared.Tool)
 local button = workspace:WaitForChild("SeedButton")
 local debounce = false
 
-local TEST_SEED = "Original"
-local TEST_TYPE = "Small"
+local TEST_SEED = "Disco"
+local TEST_TYPE = "Medium"
 
 local function createSeedTool(player, seedName)
 	local seedTool = Tool.new(player, seedName)
@@ -26,7 +26,7 @@ button.Touched:Connect(function(hit)
 		local char = humanoid.Parent
 		local player = Players:GetPlayerFromCharacter(char)
 
-		local seedTool = Tool.new(player, TEST_SEED)
+		local seedTool = Tool.new(player, TEST_SEED, TEST_TYPE)
 		seedTool:CreateToolInstance()
 	end
 

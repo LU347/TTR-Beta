@@ -7,10 +7,10 @@ local seedToolHandler = ReplicatedStorage.Shared.SeedToolHandler
 local Tool = {}
 Tool.__index = Tool
 
-function Tool.new(player, seedName, amount)
+function Tool.new(player, seedName, seedType)
 	local self = setmetatable({}, Tool)
 	self.SeedName = seedName
-	self.SeedType = "Small"
+	self.SeedType = seedType
 	self.Quantity = amount or 4
 	self.Owner = player
 

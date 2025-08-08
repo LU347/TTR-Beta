@@ -125,6 +125,13 @@ function Field:PlaySound(action)
 end
 
 function Field:Plant(seedName, seedType)
+	local seedTypes = { "Small", "Medium", "Large", "ExtraLarge" }
+	print(table.find(seedTypes, seedType))
+	print(table.find(seedTypes, self.Type))
+	if table.find(seedTypes, seedType) > table.find(seedTypes, self.Type) then 
+		print("seed type too big for this field")
+	end
+
 	local fieldType = Enums.fieldTypes[self.Type]
 
 	if not seedType or not fieldType then
