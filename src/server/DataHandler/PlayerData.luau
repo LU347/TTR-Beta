@@ -12,7 +12,7 @@ function PlayerData.new(player)
     end
 
     local self = setmetatable({}, PlayerData)
-    self.Cash = 50
+    self.Cash = 10
     self.Inventory = {}
     self.Tycoon = {
         Unlocked = {}, -- Will store unlocked items

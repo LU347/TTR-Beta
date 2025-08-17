@@ -204,6 +204,8 @@ function Tycoon:CleanUp()
 		self.Plots[plotName]:CleanUp()
 	end
 
+	self.Instance:Destroy()
+
 	self = nil
 end
 

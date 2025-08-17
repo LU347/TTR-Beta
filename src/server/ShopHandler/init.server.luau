@@ -1,36 +1,32 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local seedData = require(script.seedData)
 local Tool = require(ReplicatedStorage.Shared.Tool)
 
-local button = workspace:WaitForChild("SeedButton")
-local debounce = false
-
-local TEST_SEED = "Disco"
-local TEST_TYPE = "Medium"
+local buySeedEvent = ReplicatedStorage.RemoteEvents.BuySeeds
 
 local function createSeedTool(player, seedName)
 	local seedTool = Tool.new(player, seedName)
 	seedTool:CreateToolInstance()
 end
 
-button.Touched:Connect(function(hit)
-	local humanoid = hit.Parent:FindFirstChild("Humanoid")
-	if not humanoid then
-		return
+--server should just check the seedtype
+buySeedEvent.OnServerEvent:Connect(function(player, seedName)
+	local seedType = seedData[seedName]["Type"]
+	local seedCost = seedData[seedName]["Cost"]
+	if not seedType then
+		warn("Error processing transaction")
 	end
-
-	if not debounce then
-		debounce = true
-
-		local char = humanoid.Parent
-		local player = Players:GetPlayerFromCharacter(char)
-
-		local seedTool = Tool.new(player, TEST_SEED, TEST_TYPE)
+	
+	local playerCash = player:GetAttribute("Cash")
+	
+	if playerCash >= seedCost then
+		player:SetAttribute("Cash", playerCash - seedCost)
+		
+		local seedTool = Tool.new(player, seedName, seedType)
 		seedTool:CreateToolInstance()
+	else 
+		warn("Not enough cash")
 	end
-
-	task.wait(5)
-
-	debounce = false
 end)
