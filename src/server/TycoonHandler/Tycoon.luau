@@ -76,9 +76,7 @@ function Tycoon:CreateInitialPlot()
 end
 
 function Tycoon.new(player, tycoonInstance, playerData)
-	print(playerData)
 	playerData = playerData or nil
-	print(playerData)
 
 	local self = setmetatable({}, Tycoon)
 	self.Owner = player
@@ -257,16 +255,23 @@ function setPlayerTycoon(player, key, value)
 	warn("Failed to update data for " .. player.Name)
 end
 
-PlantSeed.OnServerEvent:Connect(function(player, fieldInstance, seed, seedType)
-	print("PlantSeed event received for field: " .. fieldInstance.Name .. " with seed: " .. seed)
+PlantSeed.OnServerEvent:Connect(function(player, fieldInstance, seed, seedType, tool)
 	local fieldTable = getFieldTable(player, fieldInstance.Name)
 	if fieldTable then
 		local success = fieldTable:Plant(seed, seedType)
+
 		if not success then
 			warn("Failed to plant seed: " .. tostring(seed) .. " on field: " .. fieldInstance.Name)
-		else
-			print("Successfully planted " .. seed .. " on field: " .. fieldInstance.Name)
+			return
 		end
+
+		local toolQty = tool:GetAttribute("Quantity")
+		if not toolQty then 
+			return 
+		end
+
+		toolQty -= 1
+		tool:SetAttribute("Quantity", toolQty)
 	else
 		warn("Field table not found for: " .. fieldInstance.Name)
 	end

@@ -11,7 +11,6 @@ local tool = script.Parent
 
 local seedName = tool:GetAttribute("SeedName")
 local seedType = tool:GetAttribute("SeedType")
-local quantity = tool:GetAttribute("Quantity")
 
 local function handleMouseClick()
 	if not mouse or not mouse.Target then
@@ -28,16 +27,13 @@ local function handleMouseClick()
 		return
 	end
 
-	if target:GetAttribute("Taken") == false then
-		PlantSeedEvent:FireServer(target, seedName, seedType)
-		quantity -= 1
-
-		tool:SetAttribute("Quantity", quantity)
-		tool.Name = seedName .. " x" .. tostring(quantity)
+	local currQty = tool:GetAttribute("Quantity")
+	if not currQty then 
+		return
 	end
 
-	if quantity <= 0 then
-		tool:Destroy()
+	if target:GetAttribute("Taken") == false then
+		PlantSeedEvent:FireServer(target, seedName, seedType, tool)
 	end
 end
 

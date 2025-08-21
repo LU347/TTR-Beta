@@ -30,11 +30,12 @@ function Tool:CreateToolInstance()
 			local newQty = currentQty + self.Quantity
 
 			tool:SetAttribute("Quantity", newQty)
+
 			self.Quantity = newQty
 
-			tool.Name = self.SeedName .. " x" .. self.Quantity
+			tool.Name = self.SeedName .. " x" .. tostring(self.Quantity)
 
-			return tool
+			return 
 		end
 	end
 
@@ -46,6 +47,19 @@ function Tool:CreateToolInstance()
 	toolInstance:SetAttribute("SeedName", self.SeedName)
 	toolInstance:SetAttribute("SeedType", self.SeedType)
 	toolInstance:SetAttribute("Quantity", self.Quantity)
+
+	toolInstance:GetAttributeChangedSignal("Quantity"):Connect(function()
+		local currQty = toolInstance:GetAttribute("Quantity")
+		self.Quantity = currQty
+
+		toolInstance.Name = self.SeedName .. " x" .. tostring(self.Quantity)
+
+		if currQty <= 0 then
+			toolInstance:Destroy()
+			self = {}
+			print(self)
+		end
+	end)
 
 	local toolHandlerClone = seedToolHandler:Clone()
 	toolHandlerClone.Parent = toolInstance
